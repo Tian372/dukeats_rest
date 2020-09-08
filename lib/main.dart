@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:lilivery/providers/userLogin.dart';
-import 'package:lilivery/views/authView.dart';
-import 'package:lilivery/views/infoView.dart';
-import 'package:lilivery/views/orderView.dart';
-import 'package:lilivery/views/post.dart';
-import 'package:lilivery/views/postList.dart';
-import 'package:lilivery/views/restaurantView.dart';
+import 'package:Dukeats/providers/userLogin.dart';
+import 'package:Dukeats/views/authView.dart';
+import 'package:Dukeats/views/infoView.dart';
+import 'package:Dukeats/views/postList.dart';
+import 'package:Dukeats/views/restaurantView.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -24,18 +22,13 @@ class MyApp extends StatelessWidget {
       ),
       debugShowCheckedModeBanner: false,
       home: ChangeNotifierProvider<UserLogin>(
-          create: (context) => UserLogin(),
-          child: MainPage(
-            title: 'Nail',
-          )),
+          create: (context) => UserLogin(), child: MainPage()),
     );
   }
 }
 
 class MainPage extends StatefulWidget {
-  final String title;
-
-  MainPage({Key key, this.title}) : super(key: key);
+  MainPage({Key key}) : super(key: key);
 
   @override
   _MainPageState createState() => _MainPageState();
@@ -48,12 +41,11 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     PostList(),
     InfoView(),
   ];
-  List<Widget> _title= [
+  List<Widget> _title = [
     Text('Tasks'),
     Text('New Post'),
     Text('Restaurant Info'),
   ];
-
 
   @override
   void initState() {
@@ -79,7 +71,6 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
         _currentIndex = index;
       });
     }
-
     return Scaffold(
       appBar: AppBar(
         title: _title[_currentIndex],

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:lilivery/views/signin.dart';
+import 'package:Dukeats/views/signin.dart';
 
 class Authenticate extends StatefulWidget {
   @override

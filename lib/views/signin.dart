@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lilivery/providers/userLogin.dart';
-import 'package:lilivery/services/auth.dart';
+import 'package:Dukeats/providers/userLogin.dart';
+import 'package:Dukeats/services/auth.dart';
 import 'package:provider/provider.dart';
 
 class SignIn extends StatefulWidget {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:lilivery/providers/userLogin.dart';
-import 'package:lilivery/views/post.dart';
+import 'package:Dukeats/providers/userLogin.dart';
+import 'package:Dukeats/views/post.dart';
 import 'package:provider/provider.dart';
 
 class PostList extends StatefulWidget {
