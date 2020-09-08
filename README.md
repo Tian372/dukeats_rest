@@ -1,4 +1,4 @@
-# lilivery
+# Dukests Restaurant Client
 
 A new Flutter project.
 
