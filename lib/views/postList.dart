@@ -1,3 +1,4 @@
+import 'package:Dukeats/localization/localization.dart';
 import 'package:flutter/material.dart';
 import 'package:Dukeats/providers/userLogin.dart';
 import 'package:Dukeats/views/post.dart';
@@ -23,7 +24,7 @@ class _PostListState extends State<PostList> {
           Navigator.of(context, rootNavigator: true).push(
               MaterialPageRoute(builder: (BuildContext context) => Post()));
         },
-        child: Text('添加今日菜单'),
+        child: Text(AppLocalizations.instance.text('post_today_text')),
       ),
     ));
   }

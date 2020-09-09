@@ -1,3 +1,4 @@
+import 'package:Dukeats/localization/localization.dart';
 import 'package:flutter/material.dart';
 import 'package:Dukeats/providers/userLogin.dart';
 import 'package:provider/provider.dart';
@@ -17,7 +18,7 @@ class _PostState extends State<Post> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('添加今日菜单'),
+          title:  Text(AppLocalizations.instance.text('post_today_text')),
         ),
         body: SafeArea(child: MealForm()));
   }
@@ -34,6 +35,7 @@ class MealFormState extends State<MealForm> {
   final _formKey = GlobalKey<FormState>();
 
   int _amount = 0;
+
   @override
   Widget build(BuildContext context) {
     // Build a Form widget using the _formKey created above.
@@ -55,7 +57,7 @@ class MealFormState extends State<MealForm> {
                       .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
                 }
               },
-              child: Text('Submit'),
+              child:  Text(AppLocalizations.instance.text('submit_text')),
             ),
           ),
         ],
@@ -74,13 +76,13 @@ class MealFormState extends State<MealForm> {
   Widget amount() {
     return RaisedButton(
       onPressed: () {
-        _showMyDialog().then((value){
+        _showMyDialog().then((value) {
           setState(() {
             _amount = value;
           });
         });
       },
-      child: Text('Amount: $_amount'),
+      child: Text('${AppLocalizations.instance.text('amount_text')}: $_amount'),
     );
   }
 
@@ -92,25 +94,25 @@ class MealFormState extends State<MealForm> {
         TextEditingController textEditingController =
             new TextEditingController();
         return AlertDialog(
-          title: Text('套餐数量'),
+          title: Text(AppLocalizations.instance.text('amount_text')),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('这次套餐的数量是：'),
-                mealText('数量', textEditingController),
-                Text('如果没有上限数量，请输入数字零。'),
+                Text('${AppLocalizations.instance.text('amount_text')}'),
+                mealText('${AppLocalizations.instance.text('amount_text')}', textEditingController),
+                Text('${AppLocalizations.instance.text('amount_help_text')}'),
               ],
             ),
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text('返回'),
+              child: Text(AppLocalizations.instance.text('back_text')),
               onPressed: () {
                 Navigator.of(context).pop(0);
               },
             ),
             FlatButton(
-              child: Text('确认'),
+              child: Text(AppLocalizations.instance.text('submit_text')),
               onPressed: () {
                 Navigator.of(context)
                     .pop(int.parse(textEditingController.text));

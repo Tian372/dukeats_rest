@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:Dukeats/providers/userLogin.dart';
-import 'package:provider/provider.dart';
 
 class InfoView extends StatefulWidget {
   @override
@@ -17,12 +15,12 @@ class _InfoViewState extends State<InfoView> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Container(
-          child: restaurantsList(),
-        ));
+      child: restaurantInfo(),
+    ));
   }
 
-  Widget restaurantsList() {
-    Future<Map<String,String>> myTypedFuture() async {
+  Widget restaurantInfo() {
+    Future<Map<String, String>> myTypedFuture() async {
       await Future.delayed(Duration(seconds: 1));
       var restaurant = new Map<String, String>();
       restaurant['name'] = 'cool restaurant';
@@ -36,44 +34,46 @@ class _InfoViewState extends State<InfoView> {
       future: myTypedFuture(),
       builder: (context, snapshot) {
         var restaurant = new Map<String, String>();
-        if(snapshot.hasData){
-          restaurant =  snapshot.data;
+        if (snapshot.hasData) {
+          restaurant = snapshot.data;
         }
         return snapshot.hasData
             ? Center(
-          child: GridView.count(
-            primary: false,
-            padding: const EdgeInsets.all(20),
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            crossAxisCount: 2,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.all(8),
-                child: Text(restaurant['name']),
-                color: Colors.teal[100],
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                child: Text(restaurant['number']),
-                color: Colors.teal[200],
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                child: Text(restaurant['address']),
-                color: Colors.teal[300],
-              ),
-              Container(
-                padding: const EdgeInsets.all(8),
-                child: Text(restaurant['sell']),
-                color: Colors.teal[400],
-              ),
-            ],
-          )
-        )
+                child: GridView.count(
+                primary: false,
+                padding: const EdgeInsets.all(20),
+                childAspectRatio: 4,
+                crossAxisSpacing: 10,
+                mainAxisSpacing: 10,
+                crossAxisCount: 1,
+                children: <Widget>[
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Center(child: Text('Name: ${restaurant['name']}')),
+                    color: Colors.teal[100],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    child:
+                        Center(child: Text('Phone: ${restaurant['number']}')),
+                    color: Colors.teal[200],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Center(
+                        child: Text('Address: ${restaurant['address']}')),
+                    color: Colors.teal[300],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    child: Center(child: Text('Sells: ${restaurant['sell']}')),
+                    color: Colors.teal[400],
+                  ),
+                ],
+              ))
             : Center(
-          child: CircularProgressIndicator(),
-        );
+                child: CircularProgressIndicator(),
+              );
       },
     );
   }
