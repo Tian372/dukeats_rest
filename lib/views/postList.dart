@@ -24,7 +24,7 @@ class _PostListState extends State<PostList> {
           Navigator.of(context, rootNavigator: true).push(
               MaterialPageRoute(builder: (BuildContext context) => Post()));
         },
-        child: Text(AppLocalizations.instance.text('post_today_text')),
+        child: Text(AppLocalizations.of(context).text('post_today_text')),
       ),
     ));
   }

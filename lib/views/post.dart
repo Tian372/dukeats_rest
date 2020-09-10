@@ -18,7 +18,7 @@ class _PostState extends State<Post> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title:  Text(AppLocalizations.instance.text('post_today_text')),
+          title:  Text(AppLocalizations.of(context).text('post_today_text')),
         ),
         body: SafeArea(child: MealForm()));
   }
@@ -57,7 +57,7 @@ class MealFormState extends State<MealForm> {
                       .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
                 }
               },
-              child:  Text(AppLocalizations.instance.text('submit_text')),
+              child:  Text(AppLocalizations.of(context).text('submit_text')),
             ),
           ),
         ],
@@ -82,7 +82,7 @@ class MealFormState extends State<MealForm> {
           });
         });
       },
-      child: Text('${AppLocalizations.instance.text('amount_text')}: $_amount'),
+      child: Text('${AppLocalizations.of(context).text('amount_text')}: $_amount'),
     );
   }
 
@@ -94,25 +94,25 @@ class MealFormState extends State<MealForm> {
         TextEditingController textEditingController =
             new TextEditingController();
         return AlertDialog(
-          title: Text(AppLocalizations.instance.text('amount_text')),
+          title: Text(AppLocalizations.of(context).text('amount_text')),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('${AppLocalizations.instance.text('amount_text')}'),
-                mealText('${AppLocalizations.instance.text('amount_text')}', textEditingController),
-                Text('${AppLocalizations.instance.text('amount_help_text')}'),
+                Text('${AppLocalizations.of(context).text('amount_text')}'),
+                mealText('${AppLocalizations.of(context).text('amount_text')}', textEditingController),
+                Text('${AppLocalizations.of(context).text('amount_help_text')}'),
               ],
             ),
           ),
           actions: <Widget>[
             FlatButton(
-              child: Text(AppLocalizations.instance.text('back_text')),
+              child: Text(AppLocalizations.of(context).text('back_text')),
               onPressed: () {
                 Navigator.of(context).pop(0);
               },
             ),
             FlatButton(
-              child: Text(AppLocalizations.instance.text('submit_text')),
+              child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
                 Navigator.of(context)
                     .pop(int.parse(textEditingController.text));

@@ -1,3 +1,4 @@
+import 'package:Dukeats/localization/localization.dart';
 import 'package:flutter/material.dart';
 
 class InfoView extends StatefulWidget {
@@ -49,24 +50,24 @@ class _InfoViewState extends State<InfoView> {
                 children: <Widget>[
                   Container(
                     padding: const EdgeInsets.all(10),
-                    child: Center(child: Text('Name: ${restaurant['name']}')),
+                    child: Center(child: Text('${AppLocalizations.of(context).text('name_text')}: ${restaurant['name']}')),
                     color: Colors.teal[100],
                   ),
                   Container(
                     padding: const EdgeInsets.all(10),
                     child:
-                        Center(child: Text('Phone: ${restaurant['number']}')),
+                        Center(child: Text('${AppLocalizations.of(context).text('phone_text')}: ${restaurant['number']}')),
                     color: Colors.teal[200],
                   ),
                   Container(
                     padding: const EdgeInsets.all(10),
                     child: Center(
-                        child: Text('Address: ${restaurant['address']}')),
+                        child: Text('${AppLocalizations.of(context).text('address_text')}: ${restaurant['address']}')),
                     color: Colors.teal[300],
                   ),
                   Container(
                     padding: const EdgeInsets.all(10),
-                    child: Center(child: Text('Sells: ${restaurant['sell']}')),
+                    child: Center(child: Text('${AppLocalizations.of(context).text('sell_text')}: ${restaurant['sell']}')),
                     color: Colors.teal[400],
                   ),
                 ],
