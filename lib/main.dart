@@ -1,14 +1,39 @@
-import 'package:Dukeats/views/mainPage.dart';
-import 'package:flutter/material.dart';
 import 'package:Dukeats/providers/userLogin.dart';
+import 'package:Dukeats/views/mainPage.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'localization/application.dart';
 import 'localization/localization.dart';
+import 'package:firebase_database/firebase_database.dart';
 
 void main() {
-  runApp(LocalisedApp());
+  runApp(App());
+}
+class App extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+      // Initialize FlutterFire
+      future: Firebase.initializeApp(),
+      builder: (context, snapshot) {
+        // Check for errors
+        if (snapshot.hasError) {
+          return CircularProgressIndicator();
+        }
+
+        // Once complete, show your application
+        if (snapshot.connectionState == ConnectionState.done) {
+          return LocalisedApp();
+        }
+
+        // Otherwise, show something whilst waiting for initialization to complete
+        return CircularProgressIndicator();
+      },
+    );
+  }
 }
 
 class LocalisedApp extends StatefulWidget {

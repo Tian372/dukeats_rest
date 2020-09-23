@@ -58,8 +58,9 @@ class _SignInState extends State<SignIn> {
 //        }
 //      });
 //    }
-    if(formKey.currentState.validate()){
+    if (formKey.currentState.validate()) {
       provider.login();
+      AuthService().signInWithEmailAndPassword('test@t.com', '123456');
     }
   }
 

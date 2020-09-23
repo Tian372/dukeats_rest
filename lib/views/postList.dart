@@ -4,6 +4,8 @@ import 'package:Dukeats/providers/userLogin.dart';
 import 'package:Dukeats/views/post.dart';
 import 'package:provider/provider.dart';
 
+import 'menuPost.dart';
+
 class PostList extends StatefulWidget {
   @override
   _PostListState createState() => _PostListState();
@@ -19,12 +21,23 @@ class _PostListState extends State<PostList> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Center(
-      child: RaisedButton(
-        onPressed: () {
-          Navigator.of(context, rootNavigator: true).push(
-              MaterialPageRoute(builder: (BuildContext context) => Post()));
-        },
-        child: Text(AppLocalizations.of(context).text('post_today_text')),
+      child: Column(
+        children: <Widget>[
+          RaisedButton(
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (BuildContext context) => MenuPost()));
+            },
+            child: Text(AppLocalizations.of(context).text('add_menu_text')),
+          ),
+          RaisedButton(
+            onPressed: () {
+              Navigator.of(context, rootNavigator: true).push(
+                  MaterialPageRoute(builder: (BuildContext context) => Post()));
+            },
+            child: Text(AppLocalizations.of(context).text('post_today_text')),
+          ),
+        ],
       ),
     ));
   }

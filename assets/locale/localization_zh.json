@@ -16,5 +16,7 @@
   "amount_text" : "套餐数量",
   "amount_help_text" : "如果没有上限数量，请输入数字零",
   "back_text" : "返回",
-  "submit_text" : "确认"
+  "submit_text" : "确认",
+
+  "add_menu_text" : "添加菜单"
 }

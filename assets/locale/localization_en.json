@@ -16,5 +16,7 @@
   "amount_text" : "Combo Amount",
   "amount_help_text" : "Enter zero if there is no limit",
   "back_text" : "Back",
-  "submit_text" : "Submit"
+  "submit_text" : "Submit",
+
+  "add_menu_text" : "Add Menu"
 }
