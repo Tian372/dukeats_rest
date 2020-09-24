@@ -43,6 +43,7 @@ class MenuFormState extends State<MenuForm> {
   final _formKey = GlobalKey<FormState>();
   int _amount = 0;
 
+
   @override
   Widget build(BuildContext context) {
     // Build a Form widget using the _formKey created above.
@@ -66,7 +67,7 @@ class MenuFormState extends State<MenuForm> {
                     borderRadius: new BorderRadius.circular(10.0)),
                 labelText: 'Price'),
             onSaved: (val) {
-              menu.price = double.parse(val);
+              menu.price = int.parse(val);
             },
           ),
           TextFormField(
@@ -93,11 +94,12 @@ class MenuFormState extends State<MenuForm> {
               onPressed: () {
                 if (_formKey.currentState.validate()) {
                   _formKey.currentState.save();
-                  this.menu.restaurantName = FirebaseAuth.instance.currentUser.uid;
+                  this.menu.restaurantID =
+                      FirebaseAuth.instance.currentUser.uid;
                   DatabaseMethods().postMenu(menu);
                   Scaffold.of(context)
                       .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
-                  Future.delayed(Duration(seconds: 2), () {
+                  Future.delayed(Duration(seconds: 1), () {
                     // 5s over, navigate to a new page
                     Navigator.pop(context);
                   });
@@ -118,5 +120,4 @@ class MenuFormState extends State<MenuForm> {
       child: Icon(Icons.camera_alt),
     );
   }
-
 }

@@ -17,7 +17,7 @@ class DatabaseMethods {
   Future<List<Menu>> getAllMenu(String id) async {
     QuerySnapshot qs = await FirebaseFirestore.instance
         .collection('menu')
-        .where('restaurantName', isEqualTo: id)
+        .where('restaurantID', isEqualTo: id)
         .get().catchError((e) {
           print(e.toString());
     });
@@ -25,10 +25,10 @@ class DatabaseMethods {
     List<Menu> myList = [];
     for (int i = 0; i < qs.docs.length; i++) {
       Menu tmp = Menu.fromJson(qs.docs[i].data());
-      print(tmp.description);
+      tmp.menuID = qs.docs[i].id;
       myList.add(tmp);
     }
-    print('returning');
+    print('Finished fetching data');
     return myList;
   }
 }
