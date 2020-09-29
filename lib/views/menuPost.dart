@@ -41,8 +41,6 @@ class MenuForm extends StatefulWidget {
 class MenuFormState extends State<MenuForm> {
   Menu menu = Menu();
   final _formKey = GlobalKey<FormState>();
-  int _amount = 0;
-
 
   @override
   Widget build(BuildContext context) {
@@ -79,15 +77,6 @@ class MenuFormState extends State<MenuForm> {
               menu.description = val;
             },
           ),
-          // TextFormField(
-          //   decoration: InputDecoration(
-          //       border: OutlineInputBorder(
-          //           borderRadius: new BorderRadius.circular(10.0)),
-          //       labelText: 'Restaurant Name'),
-          //   onSaved: (val) {
-          //     menu.restaurantName = ;
-          //   },
-          // ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: RaisedButton(

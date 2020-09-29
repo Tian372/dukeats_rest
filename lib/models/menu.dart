@@ -1,24 +1,56 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Post {
+class DailyMenu {
   String menuID;
   List<String> locations;
-  List<DateTime> pickupTimes;
+  //TODO: change to correct time format
+  List<String> pickupTimes;
+  Menu menu;
   DateTime dateTime = new DateTime.now();
+  int orderNum;
+  int orderLimit;
+  String restaurantID;
+  String taskID = '';
 
-  Post({this.menuID, this.locations, this.pickupTimes});
+  DailyMenu(
+      {this.menuID,
+      this.locations,
+      this.pickupTimes,
+      this.orderNum,
+      this.orderLimit,
+      this.restaurantID,
+      this.menu});
 
   Map<String, dynamic> toJson() => {
         'menuID': this.menuID,
         'locations': this.locations,
         'pickupTimes': this.pickupTimes,
-        'postData': this.dateTime.toUtc().toString()
+        'postDate': this.dateTime.toUtc(),
+        'orderNum': this.orderNum,
+        'orderLimit': this.orderLimit,
+        'restaurantID': this.restaurantID,
+        'menuName': this.menu.menuName,
+        'price': this.menu.price,
+        'description': this.menu.description,
       };
 
-  Post.fromJson(Map<String, dynamic> json)
-      : menuID = json['menuID'] as String,
-        locations = json['locations'] as List<String>,
-        pickupTimes = json['pickupTimes'] as List<DateTime>,
-        dateTime = json['postData'] as DateTime;
+  factory DailyMenu.fromJson(Map<String, dynamic> json) {
+    DailyMenu jsonMenu = new DailyMenu();
+    jsonMenu.menuID = json['menuID'] as String;
+    jsonMenu.locations= (json["locations"] as List<dynamic> ?? [])?.map((e) => e as String )?.toList();
+    jsonMenu.pickupTimes= (json["pickupTimes"] as List<dynamic> ?? [])?.map((e) => e as String )?.toList();
+    Timestamp timestamp = json['postDate'] as Timestamp;
+    jsonMenu.dateTime = timestamp.toDate();
+    jsonMenu.orderLimit = json['orderLimit'] as int;
+    jsonMenu.orderNum = json['orderNum'] as int;
+    jsonMenu.restaurantID = json['restaurantID'] as String;
+    jsonMenu.menu = new Menu(
+        menuName: json['menuName'] as String,
+        price: json['price'] as int,
+        description: json['description'] as String);
+
+    return jsonMenu;
+  }
 }
 
 class Menu {

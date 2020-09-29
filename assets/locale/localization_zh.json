@@ -2,7 +2,7 @@
   "task_text": "任务",
 
   "post_text": "发布",
-  "post_today_text": "添加今日菜单",
+  "post_today_text": "添加今日送餐信息",
   "info_text": "资料",
   "restaurant_info_text" : "餐厅资料",
   "email_text": "邮箱",
@@ -18,5 +18,5 @@
   "back_text" : "返回",
   "submit_text" : "确认",
 
-  "add_menu_text" : "添加菜单"
+  "add_menu_text" : "添加套餐"
 }

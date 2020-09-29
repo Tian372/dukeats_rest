@@ -37,13 +37,15 @@ class MealFormState extends State<MealForm> {
   String _selectedID;
   int _selectedIndex = -1;
   List<Menu> _allMenus;
-  Map<String, int> _pickupInfo;
+
+  //TODO: need to change to currect time format
+  List<String> pickupLocations = [];
+  List<String> pickupTime = [];
 
   @override
   void initState() {
     super.initState();
     getMenus();
-    this._pickupInfo = new LinkedHashMap<String, int>();
   }
 
   Future<void> getMenus() async {
@@ -70,9 +72,23 @@ class MealFormState extends State<MealForm> {
             child: RaisedButton(
               onPressed: () {
                 if (_formKey.currentState.validate()) {
+                  DailyMenu dailyMenu = new DailyMenu(
+                    menuID: this._selectedID,
+                    menu: this._allMenus[this._selectedIndex],
+                    orderLimit: this._amount,
+                    orderNum: 0,
+                    restaurantID: FirebaseAuth.instance.currentUser.uid,
+                    locations: this.pickupLocations,
+                    pickupTimes: this.pickupTime,
+                  );
                   //TODo: add translation
                   Scaffold.of(context)
                       .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
+                  DatabaseMethods().postDailyMenu(dailyMenu);
+                  Future.delayed(Duration(seconds: 1), () {
+                    // 5s over, navigate to a new page
+                    Navigator.pop(context);
+                  });
                 }
               },
               child: Text(AppLocalizations.of(context).text('submit_text')),
@@ -110,7 +126,10 @@ class MealFormState extends State<MealForm> {
       onPressed: () {
         _showAddLocation().then((value) {
           setState(() {
-            this._pickupInfo.addAll(value);
+            if (value != null) {
+              this.pickupTime.add(value[1]);
+              this.pickupLocations.add(value[0]);
+            }
           });
         });
       },
@@ -158,12 +177,13 @@ class MealFormState extends State<MealForm> {
     );
   }
 
-  Future<LinkedHashMap<String, int>> _showAddLocation() async {
-    return showDialog<LinkedHashMap<String, int>>(
+  Future<List<String>> _showAddLocation() async {
+    return showDialog<List<String>>(
       context: context,
       builder: (BuildContext context) {
-        TextEditingController textEditingController =
+        TextEditingController locationTextController =
             new TextEditingController();
+        TextEditingController timeController = new TextEditingController();
         return AlertDialog(
           //TODO: translation
           title: Text('Add a new pick-up location and time'),
@@ -171,9 +191,9 @@ class MealFormState extends State<MealForm> {
             child: ListBody(
               children: <Widget>[
                 Text('Location:'),
-                mealText('location', textEditingController),
+                mealText('location', locationTextController),
                 Text('Time (int for now):'),
-                mealText('Time', null),
+                mealText('Time', timeController),
               ],
             ),
           ),
@@ -187,8 +207,9 @@ class MealFormState extends State<MealForm> {
             FlatButton(
               child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
-                Navigator.of(context)
-                    .pop({textEditingController.text.toString(): 99});
+                List<String> ans =[locationTextController.text.toString(), timeController.text.toString()] ;
+                print(ans.length);
+                Navigator.of(context).pop(ans);
               },
             ),
           ],
@@ -279,20 +300,20 @@ class MealFormState extends State<MealForm> {
   }
 
   Widget locationList() {
-    List<String> keys = this._pickupInfo.keys.toList();
     return ListView.builder(
         scrollDirection: Axis.vertical,
-        itemCount: this._pickupInfo.length,
+        itemCount: this.pickupTime.length,
         shrinkWrap: false,
         itemBuilder: (context, index) {
-          String key = keys[index];
           return Card(
             child: Container(
               width: 120,
               child: Column(
                 children: [
-                  Text(key),
-                  Text(this._pickupInfo[key].toString() ,overflow: TextOverflow.ellipsis,
+                  Text(this.pickupLocations[index]),
+                  Text(
+                    this.pickupTime[index].toString(),
+                    overflow: TextOverflow.ellipsis,
                   )
                 ],
               ),

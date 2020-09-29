@@ -1,7 +1,9 @@
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/models/menu.dart';
 import 'package:Dukeats/services/database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:Dukeats/providers/userLogin.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +27,7 @@ class _RestaurantViewState extends State<RestaurantView> {
     ));
   }
 
-  Widget billboard(Menu menu) {
+  Widget billboard(DailyMenu dailyMenu) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10),
       height: 200,
@@ -34,7 +36,7 @@ class _RestaurantViewState extends State<RestaurantView> {
           Container(
             //TODO:add Chinese
             child: Text(
-              "Next Task:",
+              "Next Delivery:",
               style: TextStyle(fontSize: 30),
             ),
           ),
@@ -45,14 +47,18 @@ class _RestaurantViewState extends State<RestaurantView> {
                 Column(
                   children: <Widget>[
                     Container(
-                      child: Text('Menu Name: ${menu.menuName}'),
+                      child: Text('Menu Name: ${dailyMenu.menu.menuName}'),
                     ),
                     Container(
-                      child: Text('Menu Description: ${menu.description}'),
+                      child: Text('Location: ${dailyMenu.locations.toString()}'),
                     ),
                     Container(
-                      child: Text('Menu Price: ${menu.price}'),
+                      child: Text('Time: ${dailyMenu.pickupTimes.toString()}'),
                     ),
+                    Container(
+                      child: Text(
+                          '${dailyMenu.orderNum} / ${dailyMenu.orderLimit}'),
+                    )
                   ],
                 ),
                 Spacer(
@@ -73,10 +79,24 @@ class _RestaurantViewState extends State<RestaurantView> {
     );
   }
 
+  Widget laterTask(DailyMenu dailyMenu) {
+    return Container(
+        width: double.infinity,
+        color: Colors.black12,
+        child: Center(
+          child: ListTile(
+            title: Text(dailyMenu.menu.menuName,
+                style: TextStyle(color: Colors.black45)),
+            subtitle: Text('${dailyMenu.orderNum} / ${dailyMenu.orderLimit}',
+                style: TextStyle(color: Colors.black38)),
+          ),
+        ));
+  }
+
   Widget restaurantsList() {
-    return FutureBuilder(
-      future:
-          DatabaseMethods().getAllMenu(FirebaseAuth.instance.currentUser.uid),
+    return StreamBuilder<QuerySnapshot>(
+      stream: DatabaseMethods()
+          .dailyMenuStream(FirebaseAuth.instance.currentUser.uid),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(
@@ -84,22 +104,13 @@ class _RestaurantViewState extends State<RestaurantView> {
           );
         } else if (snapshot.data != null) {
           return ListView.builder(
-              itemCount: snapshot.data.length,
+              itemCount: snapshot.data.docs.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                Menu curr = snapshot.data[index];
-                return index == 0
-                    ? billboard(curr)
-                    : Container(
-                        width: double.infinity,
-                        color: Colors.black12,
-                        child: Center(
-                          child: ListTile(
-                            title: Text(curr.menuName,style: TextStyle(color: Colors.black45),),
-                            subtitle: Text(curr.description, style: TextStyle(color: Colors.black38),),
-                          ),
-                        ),
-                      );
+                DailyMenu curr =
+                    DailyMenu.fromJson(snapshot.data.docs[index].data());
+                curr.taskID = snapshot.data.docs[index].id;
+                return index == 0 ? billboard(curr) : laterTask(curr);
               });
         } else {
           return Center(
