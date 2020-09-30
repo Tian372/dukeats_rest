@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/models/menu.dart';
 import 'package:Dukeats/services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class MenuPost extends StatefulWidget {
   @override
@@ -39,6 +42,9 @@ class MenuForm extends StatefulWidget {
 // final String restaurantName;
 
 class MenuFormState extends State<MenuForm> {
+  File _imageFile;
+  final picker = ImagePicker();
+
   Menu menu = Menu();
   final _formKey = GlobalKey<FormState>();
 
@@ -50,6 +56,9 @@ class MenuFormState extends State<MenuForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          _imageFile == null
+              ? pictureCap()
+              : Container(child: Image.file(_imageFile, fit: BoxFit.contain)),
           TextFormField(
             decoration: InputDecoration(
                 border: OutlineInputBorder(
@@ -85,6 +94,10 @@ class MenuFormState extends State<MenuForm> {
                   _formKey.currentState.save();
                   this.menu.restaurantID =
                       FirebaseAuth.instance.currentUser.uid;
+                  this.menu.imageName =
+                      '${FirebaseAuth.instance.currentUser.uid}${menu.menuName}';
+                  DatabaseMethods().uploadImageToFirebase(
+                      this._imageFile, this.menu.imageName);
                   DatabaseMethods().postMenu(menu);
                   Scaffold.of(context)
                       .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
@@ -102,11 +115,22 @@ class MenuFormState extends State<MenuForm> {
     );
   }
 
+  Future getImage() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        this._imageFile = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
+    });
+  }
+
   Widget pictureCap() {
-    return SizedBox(
-      height: 100,
-      width: 100,
-      child: Icon(Icons.camera_alt),
+    return IconButton(
+      icon: Icon(Icons.photo_camera),
+      onPressed: () => getImage(),
     );
   }
 }

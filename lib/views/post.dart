@@ -285,6 +285,7 @@ class MealFormState extends State<MealForm> {
                     height: 200,
                     child: Column(
                       children: [
+                        imageGetter(menu.imageName),
                         Text(menu.menuName),
                         Text('\$ ${menu.price}'),
                         Text(
@@ -337,6 +338,30 @@ class MealFormState extends State<MealForm> {
           border:
               OutlineInputBorder(borderRadius: new BorderRadius.circular(10.0)),
           labelText: title),
+    );
+  }
+
+  Widget imageGetter(String imageName) {
+    return FutureBuilder(
+      future: DatabaseMethods().loadImage(imageName),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState ==
+            ConnectionState.done)
+          return Container(
+            height: 40,
+            width: 40,
+            child: Image.network(snapshot.data.toString()),
+          );
+
+        if (snapshot.connectionState ==
+            ConnectionState.waiting)
+          return Container(
+              height: 40,
+              width: 40,
+              child: CircularProgressIndicator());
+
+        return Container();
+      },
     );
   }
 }

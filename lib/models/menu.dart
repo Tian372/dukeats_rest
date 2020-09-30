@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class DailyMenu {
   String menuID;
   List<String> locations;
+
   //TODO: change to correct time format
   List<String> pickupTimes;
   Menu menu;
@@ -11,6 +12,7 @@ class DailyMenu {
   int orderLimit;
   String restaurantID;
   String taskID = '';
+  String imageName;
 
   DailyMenu(
       {this.menuID,
@@ -32,13 +34,18 @@ class DailyMenu {
         'menuName': this.menu.menuName,
         'price': this.menu.price,
         'description': this.menu.description,
+        'imageName': this.menu.imageName,
       };
 
   factory DailyMenu.fromJson(Map<String, dynamic> json) {
     DailyMenu jsonMenu = new DailyMenu();
     jsonMenu.menuID = json['menuID'] as String;
-    jsonMenu.locations= (json["locations"] as List<dynamic> ?? [])?.map((e) => e as String )?.toList();
-    jsonMenu.pickupTimes= (json["pickupTimes"] as List<dynamic> ?? [])?.map((e) => e as String )?.toList();
+    jsonMenu.locations = (json["locations"] as List<dynamic> ?? [])
+        ?.map((e) => e as String)
+        ?.toList();
+    jsonMenu.pickupTimes = (json["pickupTimes"] as List<dynamic> ?? [])
+        ?.map((e) => e as String)
+        ?.toList();
     Timestamp timestamp = json['postDate'] as Timestamp;
     jsonMenu.dateTime = timestamp.toDate();
     jsonMenu.orderLimit = json['orderLimit'] as int;
@@ -47,7 +54,8 @@ class DailyMenu {
     jsonMenu.menu = new Menu(
         menuName: json['menuName'] as String,
         price: json['price'] as int,
-        description: json['description'] as String);
+        description: json['description'] as String,
+        imageName: json['imageName'] as String);
 
     return jsonMenu;
   }
@@ -58,20 +66,28 @@ class Menu {
   String menuName;
   int price;
   String description;
+  String imageName;
   String restaurantID;
 
-  Menu({this.menuName, this.price, this.description, this.restaurantID});
+  Menu(
+      {this.menuName,
+      this.price,
+      this.description,
+      this.restaurantID,
+      this.imageName});
 
   Map<String, dynamic> toJson() => {
         'menuName': this.menuName,
         'price': this.price,
         'description': this.description,
-        'restaurantID': this.restaurantID
+        'restaurantID': this.restaurantID,
+        'imageName': this.imageName,
       };
 
   Menu.fromJson(Map<String, dynamic> json)
       : menuName = json['menuName'] as String,
         price = json['price'] as int,
         description = json['description'] as String,
-        restaurantID = json['restaurantName'] as String;
+        restaurantID = json['restaurantName'] as String,
+        imageName = json['imageName'] as String;
 }

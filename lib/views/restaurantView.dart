@@ -23,8 +23,8 @@ class _RestaurantViewState extends State<RestaurantView> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Container(
-      child: restaurantsList(),
-    ));
+          child: restaurantsList(),
+        ));
   }
 
   Widget billboard(DailyMenu dailyMenu) {
@@ -47,10 +47,14 @@ class _RestaurantViewState extends State<RestaurantView> {
                 Column(
                   children: <Widget>[
                     Container(
+                      child:imageGetter(dailyMenu.menu.imageName),
+                    ),
+                    Container(
                       child: Text('Menu Name: ${dailyMenu.menu.menuName}'),
                     ),
                     Container(
-                      child: Text('Location: ${dailyMenu.locations.toString()}'),
+                      child: Text(
+                          'Location: ${dailyMenu.locations.toString()}'),
                     ),
                     Container(
                       child: Text('Time: ${dailyMenu.pickupTimes.toString()}'),
@@ -85,6 +89,7 @@ class _RestaurantViewState extends State<RestaurantView> {
         color: Colors.black12,
         child: Center(
           child: ListTile(
+            leading: imageGetter(dailyMenu.menu.imageName),
             title: Text(dailyMenu.menu.menuName,
                 style: TextStyle(color: Colors.black45)),
             subtitle: Text('${dailyMenu.orderNum} / ${dailyMenu.orderLimit}',
@@ -108,7 +113,7 @@ class _RestaurantViewState extends State<RestaurantView> {
               shrinkWrap: true,
               itemBuilder: (context, index) {
                 DailyMenu curr =
-                    DailyMenu.fromJson(snapshot.data.docs[index].data());
+                DailyMenu.fromJson(snapshot.data.docs[index].data());
                 curr.taskID = snapshot.data.docs[index].id;
                 return index == 0 ? billboard(curr) : laterTask(curr);
               });
@@ -117,6 +122,30 @@ class _RestaurantViewState extends State<RestaurantView> {
             child: CircularProgressIndicator(),
           );
         }
+      },
+    );
+  }
+
+  Widget imageGetter(String imageName) {
+    return FutureBuilder(
+      future: DatabaseMethods().loadImage(imageName),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState ==
+            ConnectionState.done)
+          return Container(
+            height: 40,
+            width: 40,
+            child: Image.network(snapshot.data.toString()),
+          );
+
+        if (snapshot.connectionState ==
+            ConnectionState.waiting)
+          return Container(
+              height: 40,
+              width: 40,
+              child: CircularProgressIndicator());
+
+        return Container();
       },
     );
   }

@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:Dukeats/models/menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class DatabaseMethods {
@@ -27,7 +30,6 @@ class DatabaseMethods {
     QuerySnapshot qs = await FirebaseFirestore.instance
         .collection('menu')
         .where('restaurantID', isEqualTo: id)
-
         .get()
         .catchError((e) {
       print(e.toString());
@@ -80,5 +82,19 @@ class DatabaseMethods {
     Menu tmp = Menu.fromJson(qs.data());
     tmp.menuID = qs.id;
     return tmp;
+  }
+
+  Future uploadImageToFirebase(File imageFile, String fileName) async {
+    StorageReference firebaseStorageRef =
+        FirebaseStorage.instance.ref().child('images/$fileName');
+    StorageUploadTask uploadTask = firebaseStorageRef.putFile(imageFile);
+    StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+    taskSnapshot.ref.getDownloadURL().then(
+          (value) => print("Done: $value"),
+        );
+  }
+
+  Future<dynamic> loadImage(String imageName) async {
+    return await FirebaseStorage.instance.ref().child('images/$imageName').getDownloadURL();
   }
 }
