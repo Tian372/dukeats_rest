@@ -1,7 +1,8 @@
 import 'package:Dukeats/localization/application.dart';
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/providers/userLogin.dart';
-import 'package:Dukeats/views/postList.dart';
+import 'package:Dukeats/views/orderHistoryView.dart';
+import 'package:Dukeats/views/postView.dart';
 import 'package:Dukeats/views/restaurantView.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -61,11 +62,14 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
     List<Widget> _title = [
       Text(AppLocalizations.of(context).text('task_text')),
       Text(AppLocalizations.of(context).text('post_text')),
+      Text(AppLocalizations.of(context).text('history_text')),
       Text(AppLocalizations.of(context).text('info_text')),
+
     ];
     List<Widget> _children = [
       RestaurantView(),
-      PostList(),
+      PostView(),
+      OrderHistoryView(),
       InfoView(),
     ];
 
@@ -107,20 +111,26 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
       ),
       body: _children[_currentIndex], // new
       bottomNavigationBar: BottomNavigationBar(
+        fixedColor: Colors.blue,
+        unselectedItemColor: Colors.black26,
         onTap: onTabTapped, // new
         currentIndex: _currentIndex, // new
         items: [
           new BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            title: Text(AppLocalizations.of(context).text('task_text')),
+            label: AppLocalizations.of(context).text('task_text'),
           ),
           new BottomNavigationBarItem(
             icon: Icon(Icons.line_weight),
-            title: Text(AppLocalizations.of(context).text('post_text')),
+            label: AppLocalizations.of(context).text('post_text'),
+          ),
+          new BottomNavigationBarItem(
+            icon: Icon(Icons.article),
+            label: AppLocalizations.of(context).text('history_text'),
           ),
           new BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            title: Text(AppLocalizations.of(context).text('info_text')),
+            label: AppLocalizations.of(context).text('info_text'),
           ),
         ],
       ),

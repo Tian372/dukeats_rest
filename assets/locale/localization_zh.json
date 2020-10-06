@@ -18,5 +18,7 @@
   "back_text" : "返回",
   "submit_text" : "确认",
 
-  "add_menu_text" : "添加套餐"
+  "add_menu_text" : "添加套餐",
+
+  "history_text": "历史记录"
 }

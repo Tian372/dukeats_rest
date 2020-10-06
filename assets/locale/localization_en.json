@@ -2,7 +2,7 @@
   "task_text": "Task",
 
   "post_text": "Post",
-  "post_today_text": "Post Today's Menu",
+  "post_today_text": "Post Today's Offer",
   "info_text": "Info",
   "restaurant_info_text" : "Restaurant Info",
   "email_text": "Email",
@@ -18,5 +18,8 @@
   "back_text" : "Back",
   "submit_text" : "Submit",
 
-  "add_menu_text" : "Add Menu"
+  "add_menu_text" : "Add a Combo",
+
+  "history_text": "Order History"
+
 }
