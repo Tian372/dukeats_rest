@@ -14,6 +14,8 @@ class RestaurantView extends StatefulWidget {
 }
 
 class _RestaurantViewState extends State<RestaurantView> {
+  bool isHere = false;
+
   @override
   void dispose() {
     super.dispose();
@@ -23,8 +25,8 @@ class _RestaurantViewState extends State<RestaurantView> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Container(
-          child: restaurantsList(),
-        ));
+      child: restaurantsList(),
+    ));
   }
 
   Widget billboard(DailyMenu dailyMenu) {
@@ -45,16 +47,46 @@ class _RestaurantViewState extends State<RestaurantView> {
             child: Row(
               children: <Widget>[
                 Column(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.check_box,
+                      ),
+                      color: Colors.green,
+                      tooltip: 'On Time',
+                      onPressed: dailyMenu.delivered
+                          ? null
+                          : () {
+                              Scaffold.of(context).showSnackBar(SnackBar(
+                                  duration: const Duration(seconds: 2),
+                                  content: Text('Customers are notified you are on your way!')));
+                            },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.more_time,
+                      ),
+                      color: Colors.green,
+                      tooltip: 'Need more time',
+                      onPressed: dailyMenu.delivered
+                          ? null
+                          : () {
+                              _showAddTimeDialog(this.context);
+                            },
+                    ),
+                  ],
+                ),
+                Column(
                   children: <Widget>[
                     Container(
-                      child:imageGetter(dailyMenu.menu.imageName),
+                      child: imageGetter(dailyMenu.menu.imageName),
                     ),
                     Container(
                       child: Text('Menu Name: ${dailyMenu.menu.menuName}'),
                     ),
                     Container(
-                      child: Text(
-                          'Location: ${dailyMenu.locations.toString()}'),
+                      child:
+                          Text('Location: ${dailyMenu.locations.toString()}'),
                     ),
                     Container(
                       child: Text('Time: ${dailyMenu.pickupTimes.toString()}'),
@@ -69,12 +101,30 @@ class _RestaurantViewState extends State<RestaurantView> {
                   flex: 1,
                 ),
                 Container(
-                  child: RaisedButton(
-                    child: Text('Finished'),
-                    color: Colors.green,
-                    onPressed: () {},
+                  child: Column(
+                    children: [
+                      RaisedButton(
+                        child: this.isHere
+                            ? Text('Finished, next!')
+                            : Text('I am Here'),
+                        color: this.isHere ? Colors.orange : Colors.green,
+                        onPressed: () {
+                          if (dailyMenu.delivered) {
+                          } else {
+                            if (!isHere) {
+                              setState(() {
+                                this.isHere = true;
+                              });
+                            } else {
+                              DatabaseMethods().deliveredByID(dailyMenu.taskID);
+                              this.isHere = false;
+                            }
+                          }
+                        },
+                      ),
+                    ],
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -108,14 +158,25 @@ class _RestaurantViewState extends State<RestaurantView> {
             child: CircularProgressIndicator(),
           );
         } else if (snapshot.data != null) {
+          List<DailyMenu> dailyMenuList = new List<DailyMenu>();
+          for (int i = 0; i < snapshot.data.docs.length; i++) {
+            DailyMenu curr = DailyMenu.fromJson(snapshot.data.docs[i].data());
+            curr.taskID = snapshot.data.docs[i].id;
+            dailyMenuList.add(curr);
+          }
+          dailyMenuList.sort((a, b) => a.pickupTimes.compareTo(b.pickupTimes));
+
           return ListView.builder(
-              itemCount: snapshot.data.docs.length,
+              itemCount: dailyMenuList.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                DailyMenu curr =
-                DailyMenu.fromJson(snapshot.data.docs[index].data());
-                curr.taskID = snapshot.data.docs[index].id;
-                return index == 0 ? billboard(curr) : laterTask(curr);
+                if (!dailyMenuList[index].delivered) {
+                  return index == 0
+                      ? billboard(dailyMenuList[index])
+                      : laterTask(dailyMenuList[index]);
+                } else {
+                  return Container();
+                }
               });
         } else {
           return Center(
@@ -130,23 +191,79 @@ class _RestaurantViewState extends State<RestaurantView> {
     return FutureBuilder(
       future: DatabaseMethods().loadImage(imageName),
       builder: (context, snapshot) {
-        if (snapshot.connectionState ==
-            ConnectionState.done)
+        if (snapshot.connectionState == ConnectionState.done)
           return Container(
-            height: 40,
-            width: 40,
+            height: 50,
+            width: 50,
             child: Image.network(snapshot.data.toString()),
           );
 
-        if (snapshot.connectionState ==
-            ConnectionState.waiting)
+        if (snapshot.connectionState == ConnectionState.waiting)
           return Container(
-              height: 40,
-              width: 40,
-              child: CircularProgressIndicator());
+              height: 40, width: 40, child: CircularProgressIndicator());
 
         return Container();
       },
+    );
+  }
+
+  Future<int> _showAddTimeDialog(BuildContext bc) async {
+    return showDialog<int>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        TextEditingController textEditingController =
+            new TextEditingController();
+        return AlertDialog(
+          //TODO: add chinese
+          title: Text('How much more time do you need'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                //TODO: add chinese
+                mealText('Time (int for now)', textEditingController),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(AppLocalizations.of(context).text('back_text')),
+              onPressed: () {
+                Navigator.of(context).pop(0);
+              },
+            ),
+            FlatButton(
+              child: Text(AppLocalizations.of(context).text('submit_text')),
+              onPressed: () {
+                Navigator.of(context)
+                    .pop(int.parse(textEditingController.text));
+                Scaffold.of(bc).showSnackBar(SnackBar(
+                    duration: const Duration(seconds: 2),
+                    content: Text(
+                        '${int.parse(textEditingController.text.toString())} second added')));
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget mealText(String title, TextEditingController textEditingController) {
+    return TextFormField(
+//      controller: emailEditingController,
+//      validator: (val) {
+//        return RegExp(
+//                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+//                .hasMatch(val)
+//            ? null
+//            : "Enter correct email";
+//      },
+      controller: textEditingController,
+      decoration: InputDecoration(
+          border:
+              OutlineInputBorder(borderRadius: new BorderRadius.circular(10.0)),
+          labelText: title),
     );
   }
 }

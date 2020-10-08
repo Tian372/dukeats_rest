@@ -2,10 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DailyMenu {
   String menuID;
-  List<String> locations;
+  String locations;
 
   //TODO: change to correct time format
-  List<String> pickupTimes;
+  int pickupTimes;
   Menu menu;
   DateTime dateTime = new DateTime.now();
   int orderNum;
@@ -13,6 +13,7 @@ class DailyMenu {
   String restaurantID;
   String taskID = '';
   String imageName;
+  bool delivered = false;
 
   DailyMenu(
       {this.menuID,
@@ -21,7 +22,7 @@ class DailyMenu {
       this.orderNum,
       this.orderLimit,
       this.restaurantID,
-      this.menu});
+      this.menu,});
 
   Map<String, dynamic> toJson() => {
         'menuID': this.menuID,
@@ -35,17 +36,20 @@ class DailyMenu {
         'price': this.menu.price,
         'description': this.menu.description,
         'imageName': this.menu.imageName,
+        'delivered': this.delivered,
       };
 
   factory DailyMenu.fromJson(Map<String, dynamic> json) {
     DailyMenu jsonMenu = new DailyMenu();
     jsonMenu.menuID = json['menuID'] as String;
-    jsonMenu.locations = (json["locations"] as List<dynamic> ?? [])
-        ?.map((e) => e as String)
-        ?.toList();
-    jsonMenu.pickupTimes = (json["pickupTimes"] as List<dynamic> ?? [])
-        ?.map((e) => e as String)
-        ?.toList();
+    // jsonMenu.locations = (json["locations"] as List<dynamic> ?? [])
+    //     ?.map((e) => e as String)
+    //     ?.toList();
+    // jsonMenu.pickupTimes = (json["pickupTimes"] as List<dynamic> ?? [])
+    //     ?.map((e) => e as String)
+    //     ?.toList();
+    jsonMenu.locations = json['locations'] as String;
+    jsonMenu.pickupTimes = json['pickupTimes'] as int;
     Timestamp timestamp = json['postDate'] as Timestamp;
     jsonMenu.dateTime = timestamp.toDate();
     jsonMenu.orderLimit = json['orderLimit'] as int;
@@ -56,6 +60,7 @@ class DailyMenu {
         price: json['price'] as int,
         description: json['description'] as String,
         imageName: json['imageName'] as String);
+    jsonMenu.delivered = json['delivered'] as bool;
 
     return jsonMenu;
   }

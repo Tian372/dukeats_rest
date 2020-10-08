@@ -66,7 +66,9 @@ class DatabaseMethods {
   Stream<QuerySnapshot> dailyMenuStream(String id) {
     return FirebaseFirestore.instance
         .collection('dailyMenu')
-        .where('restaurantID', isEqualTo: id)
+        // .where('pickupTimes', isLessThan: 25)
+        // .where('restaurantID', isEqualTo: id)
+        .where('delivered', isEqualTo: false)
         .snapshots();
   }
 
@@ -94,7 +96,18 @@ class DatabaseMethods {
         );
   }
 
+  Future deliveredByID(String taskID) async {
+    Firestore.instance
+        .collection('dailyMenu')
+        .doc(taskID)
+        .update({
+      'delivered': true,
+    });
+  }
   Future<dynamic> loadImage(String imageName) async {
-    return await FirebaseStorage.instance.ref().child('images/$imageName').getDownloadURL();
+    return await FirebaseStorage.instance
+        .ref()
+        .child('images/$imageName')
+        .getDownloadURL();
   }
 }

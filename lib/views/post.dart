@@ -8,6 +8,16 @@ import 'package:flutter/material.dart';
 import 'package:Dukeats/providers/userLogin.dart';
 import 'package:provider/provider.dart';
 
+class PickupData {
+  String location;
+  int time;
+
+  PickupData(String l, int t) {
+    this.location = l;
+    this.time = t;
+  }
+}
+
 class Post extends StatefulWidget {
   @override
   _PostState createState() => _PostState();
@@ -38,9 +48,11 @@ class MealFormState extends State<MealForm> {
   int _selectedIndex = -1;
   List<Menu> _allMenus;
 
-  //TODO: need to change to currect time format
-  List<String> pickupLocations = [];
-  List<String> pickupTime = [];
+  // //TODO: need to change to currect time format
+  // List<String> pickupLocations = [];
+  // List<String> pickupTime = [];
+  String _pickupLocations;
+  int _pickupTimes;
 
   @override
   void initState() {
@@ -78,8 +90,11 @@ class MealFormState extends State<MealForm> {
                     orderLimit: this._amount,
                     orderNum: 0,
                     restaurantID: FirebaseAuth.instance.currentUser.uid,
-                    locations: this.pickupLocations,
-                    pickupTimes: this.pickupTime,
+                    locations: this._pickupLocations == null
+                        ? ' '
+                        : this._pickupLocations,
+                    pickupTimes:
+                        this._pickupTimes == null ? 0 : this._pickupTimes,
                   );
                   //TODo: add translation
                   Scaffold.of(context)
@@ -127,8 +142,8 @@ class MealFormState extends State<MealForm> {
         _showAddLocation().then((value) {
           setState(() {
             if (value != null) {
-              this.pickupTime.add(value[1]);
-              this.pickupLocations.add(value[0]);
+              this._pickupLocations = value.location;
+              this._pickupTimes = value.time;
             }
           });
         });
@@ -177,8 +192,8 @@ class MealFormState extends State<MealForm> {
     );
   }
 
-  Future<List<String>> _showAddLocation() async {
-    return showDialog<List<String>>(
+  Future<PickupData> _showAddLocation() async {
+    return showDialog<PickupData>(
       context: context,
       builder: (BuildContext context) {
         TextEditingController locationTextController =
@@ -207,9 +222,10 @@ class MealFormState extends State<MealForm> {
             FlatButton(
               child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
-                List<String> ans =[locationTextController.text.toString(), timeController.text.toString()] ;
-                print(ans.length);
-                Navigator.of(context).pop(ans);
+                PickupData data = new PickupData(
+                    locationTextController.text.toString(),
+                    int.parse(timeController.text.toString()));
+                Navigator.of(context).pop(data);
               },
             ),
           ],
@@ -303,7 +319,7 @@ class MealFormState extends State<MealForm> {
   Widget locationList() {
     return ListView.builder(
         scrollDirection: Axis.vertical,
-        itemCount: this.pickupTime.length,
+        itemCount: 1,
         shrinkWrap: false,
         itemBuilder: (context, index) {
           return Card(
@@ -311,9 +327,9 @@ class MealFormState extends State<MealForm> {
               width: 120,
               child: Column(
                 children: [
-                  Text(this.pickupLocations[index]),
+                  Text(this._pickupLocations),
                   Text(
-                    this.pickupTime[index].toString(),
+                    this._pickupTimes.toString(),
                     overflow: TextOverflow.ellipsis,
                   )
                 ],
@@ -345,20 +361,16 @@ class MealFormState extends State<MealForm> {
     return FutureBuilder(
       future: DatabaseMethods().loadImage(imageName),
       builder: (context, snapshot) {
-        if (snapshot.connectionState ==
-            ConnectionState.done)
+        if (snapshot.connectionState == ConnectionState.done)
           return Container(
             height: 40,
             width: 40,
             child: Image.network(snapshot.data.toString()),
           );
 
-        if (snapshot.connectionState ==
-            ConnectionState.waiting)
+        if (snapshot.connectionState == ConnectionState.waiting)
           return Container(
-              height: 40,
-              width: 40,
-              child: CircularProgressIndicator());
+              height: 40, width: 40, child: CircularProgressIndicator());
 
         return Container();
       },
