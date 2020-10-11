@@ -62,7 +62,7 @@ class MealFormState extends State<MealForm> {
 
   Future<void> getMenus() async {
     List<Menu> temp = await DatabaseMethods()
-        .getAllMenu(FirebaseAuth.instance.currentUser.uid);
+        .getAllMenu();
     setState(() {
       this._allMenus = temp;
     });
@@ -85,21 +85,15 @@ class MealFormState extends State<MealForm> {
               onPressed: () {
                 if (_formKey.currentState.validate()) {
                   DailyMenu dailyMenu = new DailyMenu(
-                    menuID: this._selectedID,
                     menu: this._allMenus[this._selectedIndex],
                     orderLimit: this._amount,
                     orderNum: 0,
                     restaurantID: FirebaseAuth.instance.currentUser.uid,
-                    locations: this._pickupLocations == null
-                        ? ' '
-                        : this._pickupLocations,
-                    pickupTimes:
-                        this._pickupTimes == null ? 0 : this._pickupTimes,
                   );
                   //TODo: add translation
                   Scaffold.of(context)
                       .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
-                  DatabaseMethods().postDailyMenu(dailyMenu);
+                  DatabaseMethods().saveDailyMenu(dailyMenu);
                   Future.delayed(Duration(seconds: 1), () {
                     // 5s over, navigate to a new page
                     Navigator.pop(context);
@@ -209,6 +203,14 @@ class MealFormState extends State<MealForm> {
                 mealText('location', locationTextController),
                 Text('Time (int for now):'),
                 mealText('Time', timeController),
+                FlatButton(
+                    child: Text('Time Picker Test'),
+                    onPressed: () {
+                      showTimePicker(
+                          context: context,
+                          initialTime:
+                              TimeOfDay.fromDateTime(new DateTime.now()));
+                    })
               ],
             ),
           ),

@@ -54,7 +54,7 @@ class _RestaurantViewState extends State<RestaurantView> {
                       ),
                       color: Colors.green,
                       tooltip: 'On Time',
-                      onPressed: dailyMenu.delivered
+                      onPressed: this.isHere
                           ? null
                           : () {
                               Scaffold.of(context).showSnackBar(SnackBar(
@@ -68,7 +68,7 @@ class _RestaurantViewState extends State<RestaurantView> {
                       ),
                       color: Colors.green,
                       tooltip: 'Need more time',
-                      onPressed: dailyMenu.delivered
+                      onPressed: this.isHere
                           ? null
                           : () {
                               _showAddTimeDialog(this.context);
@@ -86,10 +86,10 @@ class _RestaurantViewState extends State<RestaurantView> {
                     ),
                     Container(
                       child:
-                          Text('Location: ${dailyMenu.locations.toString()}'),
+                          Text('Location: ${dailyMenu.toString()}'),
                     ),
                     Container(
-                      child: Text('Time: ${dailyMenu.pickupTimes.toString()}'),
+                      child: Text('Time: ${dailyMenu.toString()}'),
                     ),
                     Container(
                       child: Text(
@@ -109,14 +109,14 @@ class _RestaurantViewState extends State<RestaurantView> {
                             : Text('I am Here'),
                         color: this.isHere ? Colors.orange : Colors.green,
                         onPressed: () {
-                          if (dailyMenu.delivered) {
+                          if (this.isHere) {
                           } else {
                             if (!isHere) {
                               setState(() {
                                 this.isHere = true;
                               });
                             } else {
-                              DatabaseMethods().deliveredByID(dailyMenu.taskID);
+                              DatabaseMethods().deliveredByID(dailyMenu.dailyMenuID);
                               this.isHere = false;
                             }
                           }
@@ -161,16 +161,16 @@ class _RestaurantViewState extends State<RestaurantView> {
           List<DailyMenu> dailyMenuList = new List<DailyMenu>();
           for (int i = 0; i < snapshot.data.docs.length; i++) {
             DailyMenu curr = DailyMenu.fromJson(snapshot.data.docs[i].data());
-            curr.taskID = snapshot.data.docs[i].id;
+            curr.dailyMenuID = snapshot.data.docs[i].id;
             dailyMenuList.add(curr);
           }
-          dailyMenuList.sort((a, b) => a.pickupTimes.compareTo(b.pickupTimes));
+          //dailyMenuList.sort((a, b) => a.pickupInfo..compareTo(b.pickupTimes));
 
           return ListView.builder(
               itemCount: dailyMenuList.length,
               shrinkWrap: true,
               itemBuilder: (context, index) {
-                if (!dailyMenuList[index].delivered) {
+                if (true) {
                   return index == 0
                       ? billboard(dailyMenuList[index])
                       : laterTask(dailyMenuList[index]);

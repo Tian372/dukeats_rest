@@ -3,33 +3,38 @@ import 'dart:io';
 import 'package:Dukeats/models/menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
 
 class DatabaseMethods {
-  Future<void> postMenu(Menu menu) async {
+  Future<void> saveMenu(Menu menu) async {
     FirebaseFirestore.instance
-        .collection("menu")
+        .collection("restaurants")
+        .doc(FirebaseAuth.instance.currentUser.uid)
+        .collection('menu')
         .add(menu.toJson())
         .catchError((e) {
       print(e.toString());
     });
   }
 
-  Future<void> postDailyMenu(DailyMenu dailyMenu) async {
+  Future saveDailyMenu(DailyMenu dailyMenu) async {
     FirebaseFirestore.instance
         .collection("dailyMenu")
         .add(dailyMenu.toJson())
-        .catchError((e) {
+        .then((docRef) {
+      for (Pickups pickups in dailyMenu.pickupInfo) {
+        docRef.collection('pickups').add(pickups.toJson());
+      }
+    }).catchError((e) {
       print(e.toString());
     });
   }
 
-  Future<List<Menu>> getAllMenu(String id) async {
+  Future<List<Menu>> getAllMenu() async {
     QuerySnapshot qs = await FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(FirebaseAuth.instance.currentUser.uid)
         .collection('menu')
-        .where('restaurantID', isEqualTo: id)
         .get()
         .catchError((e) {
       print(e.toString());
@@ -56,10 +61,10 @@ class DatabaseMethods {
     List<DailyMenu> myList = new List(qs.docs.length);
     for (int i = 0; i < qs.docs.length; i++) {
       DailyMenu tmp = DailyMenu.fromJson(qs.docs[i].data());
-      tmp.taskID = qs.docs[i].id;
+      tmp.dailyMenuID = qs.docs[i].id;
       myList.add(tmp);
     }
-    myList.sort((a, b) => b.dateTime.compareTo(a.dateTime));
+    myList.sort((a, b) => b.postDate.compareTo(a.postDate));
     return myList;
   }
 
@@ -97,13 +102,11 @@ class DatabaseMethods {
   }
 
   Future deliveredByID(String taskID) async {
-    Firestore.instance
-        .collection('dailyMenu')
-        .doc(taskID)
-        .update({
+    Firestore.instance.collection('dailyMenu').doc(taskID).update({
       'delivered': true,
     });
   }
+
   Future<dynamic> loadImage(String imageName) async {
     return await FirebaseStorage.instance
         .ref()

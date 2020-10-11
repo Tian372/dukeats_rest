@@ -35,16 +35,9 @@ class MenuForm extends StatefulWidget {
   }
 }
 
-// final String menuName;
-// final double price;
-// final String description;
-// final List<String> items;
-// final String restaurantName;
-
 class MenuFormState extends State<MenuForm> {
   File _imageFile;
   final picker = ImagePicker();
-
   Menu menu = Menu();
   final _formKey = GlobalKey<FormState>();
 
@@ -92,13 +85,11 @@ class MenuFormState extends State<MenuForm> {
               onPressed: () {
                 if (_formKey.currentState.validate()) {
                   _formKey.currentState.save();
-                  this.menu.restaurantID =
-                      FirebaseAuth.instance.currentUser.uid;
                   this.menu.imageName =
                       '${FirebaseAuth.instance.currentUser.uid}${menu.menuName}';
                   DatabaseMethods().uploadImageToFirebase(
                       this._imageFile, this.menu.imageName);
-                  DatabaseMethods().postMenu(menu);
+                  DatabaseMethods().saveMenu(menu);
                   Scaffold.of(context)
                       .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
                   Future.delayed(Duration(seconds: 1), () {

@@ -1,91 +1,69 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 
 class DailyMenu {
-  String menuID;
-  String locations;
-
   //TODO: change to correct time format
-  int pickupTimes;
   Menu menu;
-  DateTime dateTime = new DateTime.now();
+  DateTime postDate = new DateTime.now();
   int orderNum;
   int orderLimit;
   String restaurantID;
-  String taskID = '';
-  String imageName;
-  bool delivered = false;
+  List<Pickups> pickupInfo;
+  String dailyMenuID = ''; //read from firebase document id
 
-  DailyMenu(
-      {this.menuID,
-      this.locations,
-      this.pickupTimes,
-      this.orderNum,
-      this.orderLimit,
-      this.restaurantID,
-      this.menu,});
+  DailyMenu({
+    this.orderNum,
+    this.orderLimit,
+    this.restaurantID,
+    this.menu,
+  });
 
   Map<String, dynamic> toJson() => {
-        'menuID': this.menuID,
-        'locations': this.locations,
-        'pickupTimes': this.pickupTimes,
-        'postDate': this.dateTime.toUtc(),
+        'postDate': this.postDate.toUtc(),
         'orderNum': this.orderNum,
         'orderLimit': this.orderLimit,
         'restaurantID': this.restaurantID,
+        'menuID': this.menu.menuID,
         'menuName': this.menu.menuName,
         'price': this.menu.price,
         'description': this.menu.description,
         'imageName': this.menu.imageName,
-        'delivered': this.delivered,
       };
 
   factory DailyMenu.fromJson(Map<String, dynamic> json) {
     DailyMenu jsonMenu = new DailyMenu();
-    jsonMenu.menuID = json['menuID'] as String;
-    // jsonMenu.locations = (json["locations"] as List<dynamic> ?? [])
-    //     ?.map((e) => e as String)
-    //     ?.toList();
-    // jsonMenu.pickupTimes = (json["pickupTimes"] as List<dynamic> ?? [])
-    //     ?.map((e) => e as String)
-    //     ?.toList();
-    jsonMenu.locations = json['locations'] as String;
-    jsonMenu.pickupTimes = json['pickupTimes'] as int;
+
     Timestamp timestamp = json['postDate'] as Timestamp;
-    jsonMenu.dateTime = timestamp.toDate();
+    jsonMenu.postDate = timestamp.toDate();
+
     jsonMenu.orderLimit = json['orderLimit'] as int;
     jsonMenu.orderNum = json['orderNum'] as int;
     jsonMenu.restaurantID = json['restaurantID'] as String;
+
     jsonMenu.menu = new Menu(
         menuName: json['menuName'] as String,
         price: json['price'] as int,
         description: json['description'] as String,
         imageName: json['imageName'] as String);
-    jsonMenu.delivered = json['delivered'] as bool;
+    jsonMenu.menu.menuID = json['menuID'] as String;
 
     return jsonMenu;
   }
 }
 
 class Menu {
-  String menuID = '';
+  String menuID = ''; //read from firebase doc id
   String menuName;
   int price;
   String description;
   String imageName;
-  String restaurantID;
 
-  Menu(
-      {this.menuName,
-      this.price,
-      this.description,
-      this.restaurantID,
-      this.imageName});
+  Menu({this.menuName, this.price, this.description, this.imageName});
 
   Map<String, dynamic> toJson() => {
         'menuName': this.menuName,
         'price': this.price,
         'description': this.description,
-        'restaurantID': this.restaurantID,
         'imageName': this.imageName,
       };
 
@@ -93,6 +71,64 @@ class Menu {
       : menuName = json['menuName'] as String,
         price = json['price'] as int,
         description = json['description'] as String,
-        restaurantID = json['restaurantName'] as String,
         imageName = json['imageName'] as String;
+}
+
+enum Status { OnTime, Late, Arrived, Finished }
+
+String statusToString(Status status) {
+  switch (status) {
+    case Status.OnTime:
+      return 'ONTM';
+    case Status.Late:
+      return 'LATE';
+    case Status.Arrived:
+      return 'ARRV';
+    case Status.Finished:
+      return 'FNSH';
+    default:
+      return '';
+  }
+}
+
+Status stringToStatus(String str) {
+  if (str == 'ONTM') {
+    return Status.OnTime;
+  }
+  if (str == 'LATE') {
+    return Status.Late;
+  }
+  if (str == 'ARRV') {
+    return Status.Arrived;
+  }
+  if (str == 'FNSH') {
+    return Status.Finished;
+  }
+  return Status.OnTime;
+}
+
+class Pickups {
+  String pickupID = ''; //read from firebase doc id
+  String location;
+  DateTime time;
+  Status pickupStatus;
+  List<String> orderIDs;
+
+  Pickups(this.pickupID, this.location, this.time, this.pickupStatus,
+      this.orderIDs);
+
+  Map<String, dynamic> toJson() => {
+        'location': this.location,
+        'time': this.time.toUtc(),
+        'status': statusToString(this.pickupStatus),
+        'orderIDs': this.orderIDs,
+      };
+
+  Pickups.fromJson(Map<String, dynamic> json)
+      : this.location = json['location'] as String,
+        this.time = (json['time'] as Timestamp).toDate(),
+        this.pickupStatus = stringToStatus(json['status'] as String),
+        this.orderIDs = (json["orderIDs"] as List<dynamic> ?? [])
+            ?.map((e) => e as String)
+            ?.toList();
 }
