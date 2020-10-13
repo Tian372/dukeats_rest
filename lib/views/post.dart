@@ -62,7 +62,7 @@ class MealFormState extends State<MealForm> {
           Container(width: double.infinity, height: 150, child: menuList()),
           amount(),
           location(),
-          Container(width: double.infinity, height: 70, child: locationList()),
+          Flexible(child: locationList()),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: RaisedButton(

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:Dukeats/models/menu.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -18,16 +19,16 @@ class DatabaseMethods {
   }
 
   Future saveDailyMenu(DailyMenu dailyMenu) async {
-    FirebaseFirestore.instance
+    var docRef = await FirebaseFirestore.instance
         .collection("dailyMenu")
         .add(dailyMenu.toJson())
-        .then((docRef) {
-      for (Pickups pickups in dailyMenu.pickupInfo) {
-        docRef.collection('pickups').add(pickups.toJson());
-      }
-    }).catchError((e) {
+        .catchError((e) {
       print(e.toString());
     });
+    print(dailyMenu.pickupInfo.length);
+    for(Pickups ps in dailyMenu.pickupInfo){
+      docRef.collection('pickups').add(ps.toJson());
+    }
   }
 
   Future<List<Menu>> getAllMenu() async {
@@ -85,7 +86,9 @@ class DatabaseMethods {
         .catchError((e) {
       print(e.toString());
     });
-    return DailyMenu.fromJson(qs.docs[0].data());
+    DailyMenu dailyMenu = DailyMenu.fromJson(qs.docs[0].data());
+    dailyMenu.dailyMenuID = qs.docs[0].id;
+    return dailyMenu;
   }
 
   Future<Menu> getMenuById(String menuID) async {
@@ -113,7 +116,7 @@ class DatabaseMethods {
   }
 
   Future deliveredByID(String taskID) async {
-    Firestore.instance.collection('dailyMenu').doc(taskID).update({
+    FirebaseFirestore.instance.collection('dailyMenu').doc(taskID).update({
       'delivered': true,
     });
   }
@@ -123,5 +126,13 @@ class DatabaseMethods {
         .ref()
         .child('images/$imageName')
         .getDownloadURL();
+  }
+
+  Stream<QuerySnapshot> getPickUpByDailyMenuID(String id) {
+    return FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(id)
+        .collection('pickups')
+        .snapshots();
   }
 }

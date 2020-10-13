@@ -92,6 +92,21 @@ String statusToString(Status status) {
   }
 }
 
+String statusToNormalString(Status status) {
+  switch (status) {
+    case Status.OnTime:
+      return 'On Time';
+    case Status.Late:
+      return 'Late';
+    case Status.Arrived:
+      return 'Arrived';
+    case Status.Finished:
+      return 'Finished';
+    default:
+      return '';
+  }
+}
+
 Status stringToStatus(String str) {
   if (str == 'ONTM') {
     return Status.OnTime;
@@ -110,7 +125,7 @@ Status stringToStatus(String str) {
 
 class Pickups {
   String pickupID = ''; //read from firebase doc id
-  String location;
+  String location ='';
   DateTime time;
   Status pickupStatus;
   List<String> orderIDs;

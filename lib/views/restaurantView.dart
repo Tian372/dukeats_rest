@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/models/menu.dart';
 import 'package:Dukeats/services/database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class RestaurantView extends StatefulWidget {
@@ -9,7 +12,22 @@ class RestaurantView extends StatefulWidget {
 }
 
 class _RestaurantViewState extends State<RestaurantView> {
+  DailyMenu _dailyMenu;
   bool isHere = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getDailyMenu();
+  }
+
+  Future<void> getDailyMenu() async {
+    await DatabaseMethods().dailyMenuFuture().then((value) {
+      setState(() {
+        this._dailyMenu = value;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -22,10 +40,13 @@ class _RestaurantViewState extends State<RestaurantView> {
         child: Column(
       children: [
         Container(
+          padding: EdgeInsets.all(10),
           height: 300,
           child: topMenuInfo(),
         ),
-        Flexible(child: track()),
+        this._dailyMenu == null
+            ? Container()
+            : Flexible(child: track(this._dailyMenu.dailyMenuID)),
       ],
     ));
   }
@@ -151,30 +172,27 @@ class _RestaurantViewState extends State<RestaurantView> {
   }
 
   Widget topMenuInfo() {
-    return FutureBuilder<DailyMenu>(
-      future: DatabaseMethods().dailyMenuFuture(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          return Container(
+    return this._dailyMenu == null
+        ? Center(child: CircularProgressIndicator())
+        : Container(
             child: Card(
               clipBehavior: Clip.antiAlias,
               elevation: 10,
               child: Column(
                 children: [
-                  imageGetter(snapshot.data.menu.imageName),
+                  imageGetter(this._dailyMenu.menu.imageName),
                   ListTile(
                     leading: Icon(Icons.arrow_forward_ios),
-                    title: Text(snapshot.data.menu.menuName),
+                    title: Text(this._dailyMenu.menu.menuName),
                     subtitle: Text(
-                      '\$ ${snapshot.data.menu.price}',
+                      '\$ ${this._dailyMenu.menu.price}',
                       style: TextStyle(color: Colors.black.withOpacity(0.6)),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 5, 16, 5),
                     child: Text(
-                      snapshot.data.menu.description,
+                      this._dailyMenu.menu.description,
                       style: TextStyle(color: Colors.black.withOpacity(0.6)),
                     ),
                   ),
@@ -182,11 +200,6 @@ class _RestaurantViewState extends State<RestaurantView> {
               ),
             ),
           );
-        } else {
-          return CircularProgressIndicator();
-        }
-      },
-    );
   }
 
   Widget imageGetter(String imageName) {
@@ -195,6 +208,7 @@ class _RestaurantViewState extends State<RestaurantView> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done)
           return Container(
+            padding: EdgeInsets.symmetric(vertical: 5),
             child: Image.network(snapshot.data.toString()),
           );
 
@@ -249,66 +263,82 @@ class _RestaurantViewState extends State<RestaurantView> {
     );
   }
 
-  Widget track() {
-    return Container(
-      margin: EdgeInsets.all(8.0),
-      height: 100.0,
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: Icon(
-                  Icons.trip_origin,
-                  color: Colors.blue,
-                ),
+  Widget track(String dailyMenuID) {
+    return StreamBuilder<QuerySnapshot>(
+        stream: DatabaseMethods().getPickUpByDailyMenuID(dailyMenuID),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Pickups> list = [];
+            for (int i = 0; i < snapshot.data.docs.length; i++) {
+              Pickups ps = Pickups.fromJson(snapshot.data.docs[i].data());
+              ps.pickupID = snapshot.data.docs[i].id;
+              list.add(ps);
+              print(ps.location);
+            }
+            return ListView.builder(
+                scrollDirection: Axis.vertical,
+                itemCount: list.length,
+                shrinkWrap: true,
+                itemBuilder: (context, index) {
+                  return trackerTile(list[index]);
+                });
+          } else {
+            return CircularProgressIndicator();
+          }
+        });
+  }
+
+  Widget trackerTile(Pickups pickups) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(
+              Icons.trip_origin,
+              color: Colors.blue,
+            ),
+            title: Text('${pickups.location}'),
+            subtitle: Text(
+              'Status: ${statusToNormalString(pickups.pickupStatus)}',
+              style: TextStyle(color: Colors.black.withOpacity(0.6)),
+            ),
+            trailing: Text(
+              '${pickups.time.hour} : ${pickups.time.minute}',
+              style: TextStyle(fontSize: 20, color: Colors.black),
+            ),
+          ),
+          ButtonBar(
+            alignment: MainAxisAlignment.start,
+            children: [
+              FlatButton(
+                textColor: const Color(0xFF6200EE),
+                onPressed: () {
+                  // Perform some action
+                },
+                child: const Text('On Time'),
               ),
-              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
-              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
-              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Icon(
-                  Icons.location_on,
-                  color: Colors.red,
-                ),
+              FlatButton(
+                textColor: const Color(0xFF6200EE),
+                onPressed: () {
+                  // Perform some action
+                },
+                child: const Text('Late'),
+              ),
+              FlatButton(
+                textColor: const Color(0xFF6200EE),
+                onPressed: () {
+                  // Perform some action
+                },
+                child: const Text('I am here!'),
               ),
             ],
-          ),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  height: 40.0,
-                  color: Colors.grey,
-                  child: Center(
-                    child: Text("Your widget here"),
-                  ),
-                ),
-                Container(
-                  height: 40.0,
-                  margin: EdgeInsets.only(top: 4.0),
-                  color: Colors.greenAccent,
-                  child: Center(
-                    child: Text("Your widget here"),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
     );
   }
 
-  Widget trackTile(){
-
-  }
   Widget mealText(String title, TextEditingController textEditingController) {
     return TextFormField(
 //      controller: emailEditingController,
