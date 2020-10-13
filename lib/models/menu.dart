@@ -16,6 +16,7 @@ class DailyMenu {
     this.orderLimit,
     this.restaurantID,
     this.menu,
+    this.pickupInfo
   });
 
   Map<String, dynamic> toJson() => {

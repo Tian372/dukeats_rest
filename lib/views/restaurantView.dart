@@ -1,12 +1,7 @@
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/models/menu.dart';
 import 'package:Dukeats/services/database.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:Dukeats/providers/userLogin.dart';
-import 'package:provider/provider.dart';
 
 class RestaurantView extends StatefulWidget {
   @override
@@ -24,8 +19,14 @@ class _RestaurantViewState extends State<RestaurantView> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-        child: Container(
-      child: restaurantsList(),
+        child: Column(
+      children: [
+        Container(
+          height: 300,
+          child: topMenuInfo(),
+        ),
+        Flexible(child: track()),
+      ],
     ));
   }
 
@@ -59,7 +60,8 @@ class _RestaurantViewState extends State<RestaurantView> {
                           : () {
                               Scaffold.of(context).showSnackBar(SnackBar(
                                   duration: const Duration(seconds: 2),
-                                  content: Text('Customers are notified you are on your way!')));
+                                  content: Text(
+                                      'Customers are notified you are on your way!')));
                             },
                     ),
                     IconButton(
@@ -85,8 +87,7 @@ class _RestaurantViewState extends State<RestaurantView> {
                       child: Text('Menu Name: ${dailyMenu.menu.menuName}'),
                     ),
                     Container(
-                      child:
-                          Text('Location: ${dailyMenu.toString()}'),
+                      child: Text('Location: ${dailyMenu.toString()}'),
                     ),
                     Container(
                       child: Text('Time: ${dailyMenu.toString()}'),
@@ -116,7 +117,8 @@ class _RestaurantViewState extends State<RestaurantView> {
                                 this.isHere = true;
                               });
                             } else {
-                              DatabaseMethods().deliveredByID(dailyMenu.dailyMenuID);
+                              DatabaseMethods()
+                                  .deliveredByID(dailyMenu.dailyMenuID);
                               this.isHere = false;
                             }
                           }
@@ -148,40 +150,40 @@ class _RestaurantViewState extends State<RestaurantView> {
         ));
   }
 
-  Widget restaurantsList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: DatabaseMethods()
-          .dailyMenuStream(FirebaseAuth.instance.currentUser.uid),
+  Widget topMenuInfo() {
+    return FutureBuilder<DailyMenu>(
+      future: DatabaseMethods().dailyMenuFuture(),
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: CircularProgressIndicator(),
+        if (snapshot.connectionState == ConnectionState.done &&
+            snapshot.hasData) {
+          return Container(
+            child: Card(
+              clipBehavior: Clip.antiAlias,
+              elevation: 10,
+              child: Column(
+                children: [
+                  imageGetter(snapshot.data.menu.imageName),
+                  ListTile(
+                    leading: Icon(Icons.arrow_forward_ios),
+                    title: Text(snapshot.data.menu.menuName),
+                    subtitle: Text(
+                      '\$ ${snapshot.data.menu.price}',
+                      style: TextStyle(color: Colors.black.withOpacity(0.6)),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 5, 16, 5),
+                    child: Text(
+                      snapshot.data.menu.description,
+                      style: TextStyle(color: Colors.black.withOpacity(0.6)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
-        } else if (snapshot.data != null) {
-          List<DailyMenu> dailyMenuList = new List<DailyMenu>();
-          for (int i = 0; i < snapshot.data.docs.length; i++) {
-            DailyMenu curr = DailyMenu.fromJson(snapshot.data.docs[i].data());
-            curr.dailyMenuID = snapshot.data.docs[i].id;
-            dailyMenuList.add(curr);
-          }
-          //dailyMenuList.sort((a, b) => a.pickupInfo..compareTo(b.pickupTimes));
-
-          return ListView.builder(
-              itemCount: dailyMenuList.length,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                if (true) {
-                  return index == 0
-                      ? billboard(dailyMenuList[index])
-                      : laterTask(dailyMenuList[index]);
-                } else {
-                  return Container();
-                }
-              });
         } else {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
+          return CircularProgressIndicator();
         }
       },
     );
@@ -193,8 +195,6 @@ class _RestaurantViewState extends State<RestaurantView> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done)
           return Container(
-            height: 50,
-            width: 50,
             child: Image.network(snapshot.data.toString()),
           );
 
@@ -249,6 +249,66 @@ class _RestaurantViewState extends State<RestaurantView> {
     );
   }
 
+  Widget track() {
+    return Container(
+      margin: EdgeInsets.all(8.0),
+      height: 100.0,
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Icon(
+                  Icons.trip_origin,
+                  color: Colors.blue,
+                ),
+              ),
+              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
+              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
+              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: Icon(
+                  Icons.location_on,
+                  color: Colors.red,
+                ),
+              ),
+            ],
+          ),
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: <Widget>[
+                Container(
+                  height: 40.0,
+                  color: Colors.grey,
+                  child: Center(
+                    child: Text("Your widget here"),
+                  ),
+                ),
+                Container(
+                  height: 40.0,
+                  margin: EdgeInsets.only(top: 4.0),
+                  color: Colors.greenAccent,
+                  child: Center(
+                    child: Text("Your widget here"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget trackTile(){
+
+  }
   Widget mealText(String title, TextEditingController textEditingController) {
     return TextFormField(
 //      controller: emailEditingController,

@@ -68,13 +68,24 @@ class DatabaseMethods {
     return myList;
   }
 
-  Stream<QuerySnapshot> dailyMenuStream(String id) {
+  Stream<QuerySnapshot> dailyMenuStream() {
     return FirebaseFirestore.instance
-        .collection('dailyMenu')
+        .collection('restaurants')
         // .where('pickupTimes', isLessThan: 25)
-        // .where('restaurantID', isEqualTo: id)
-        .where('delivered', isEqualTo: false)
+        .where('restaurantID', isEqualTo: FirebaseAuth.instance.currentUser.uid)
+        .limit(1)
         .snapshots();
+  }
+
+  Future<DailyMenu> dailyMenuFuture() async {
+    QuerySnapshot qs = await FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .where('restaurantID', isEqualTo: FirebaseAuth.instance.currentUser.uid)
+        .get()
+        .catchError((e) {
+      print(e.toString());
+    });
+    return DailyMenu.fromJson(qs.docs[0].data());
   }
 
   Future<Menu> getMenuById(String menuID) async {

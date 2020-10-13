@@ -5,18 +5,6 @@ import 'package:Dukeats/models/menu.dart';
 import 'package:Dukeats/services/database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:Dukeats/providers/userLogin.dart';
-import 'package:provider/provider.dart';
-
-class PickupData {
-  String location;
-  int time;
-
-  PickupData(String l, int t) {
-    this.location = l;
-    this.time = t;
-  }
-}
 
 class Post extends StatefulWidget {
   @override
@@ -49,10 +37,7 @@ class MealFormState extends State<MealForm> {
   List<Menu> _allMenus;
 
   // //TODO: need to change to currect time format
-  // List<String> pickupLocations = [];
-  // List<String> pickupTime = [];
-  String _pickupLocations;
-  int _pickupTimes;
+  List<Pickups> pickupData = [];
 
   @override
   void initState() {
@@ -61,8 +46,7 @@ class MealFormState extends State<MealForm> {
   }
 
   Future<void> getMenus() async {
-    List<Menu> temp = await DatabaseMethods()
-        .getAllMenu();
+    List<Menu> temp = await DatabaseMethods().getAllMenu();
     setState(() {
       this._allMenus = temp;
     });
@@ -75,10 +59,10 @@ class MealFormState extends State<MealForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Container(width: double.infinity, height: 100, child: menuList()),
+          Container(width: double.infinity, height: 150, child: menuList()),
           amount(),
           location(),
-          Container(width: double.infinity, height: 300, child: locationList()),
+          Container(width: double.infinity, height: 70, child: locationList()),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             child: RaisedButton(
@@ -89,6 +73,7 @@ class MealFormState extends State<MealForm> {
                     orderLimit: this._amount,
                     orderNum: 0,
                     restaurantID: FirebaseAuth.instance.currentUser.uid,
+                    pickupInfo: this.pickupData,
                   );
                   //TODo: add translation
                   Scaffold.of(context)
@@ -119,7 +104,7 @@ class MealFormState extends State<MealForm> {
   Widget amount() {
     return RaisedButton(
       onPressed: () {
-        _showMyDialog().then((value) {
+        _showAmountDialog().then((value) {
           setState(() {
             _amount = value;
           });
@@ -136,8 +121,7 @@ class MealFormState extends State<MealForm> {
         _showAddLocation().then((value) {
           setState(() {
             if (value != null) {
-              this._pickupLocations = value.location;
-              this._pickupTimes = value.time;
+              this.pickupData.add(value);
             }
           });
         });
@@ -146,7 +130,7 @@ class MealFormState extends State<MealForm> {
     );
   }
 
-  Future<int> _showMyDialog() async {
+  Future<int> _showAmountDialog() async {
     return showDialog<int>(
       context: context,
       barrierDismissible: false, // user must tap button!
@@ -186,13 +170,14 @@ class MealFormState extends State<MealForm> {
     );
   }
 
-  Future<PickupData> _showAddLocation() async {
-    return showDialog<PickupData>(
+  Future<Pickups> _showAddLocation() async {
+    return showDialog<Pickups>(
       context: context,
       builder: (BuildContext context) {
         TextEditingController locationTextController =
             new TextEditingController();
-        TextEditingController timeController = new TextEditingController();
+        // TextEditingController timeController = new TextEditingController();
+        DateTime _selectedTime;
         return AlertDialog(
           //TODO: translation
           title: Text('Add a new pick-up location and time'),
@@ -202,14 +187,19 @@ class MealFormState extends State<MealForm> {
                 Text('Location:'),
                 mealText('location', locationTextController),
                 Text('Time (int for now):'),
-                mealText('Time', timeController),
+                // mealText('Time', timeController),
                 FlatButton(
                     child: Text('Time Picker Test'),
                     onPressed: () {
                       showTimePicker(
-                          context: context,
-                          initialTime:
-                              TimeOfDay.fromDateTime(new DateTime.now()));
+                              context: context,
+                              initialTime:
+                                  TimeOfDay.fromDateTime(new DateTime.now()))
+                          .then((value) {
+                        final now = new DateTime.now();
+                        _selectedTime = new DateTime(now.year, now.month,
+                            now.day, value.hour, value.minute);
+                      });
                     })
               ],
             ),
@@ -224,9 +214,12 @@ class MealFormState extends State<MealForm> {
             FlatButton(
               child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
-                PickupData data = new PickupData(
+                Pickups data = new Pickups(
+                    '',
                     locationTextController.text.toString(),
-                    int.parse(timeController.text.toString()));
+                    _selectedTime,
+                    Status.OnTime,
+                    null);
                 Navigator.of(context).pop(data);
               },
             ),
@@ -235,46 +228,6 @@ class MealFormState extends State<MealForm> {
       },
     );
   }
-
-  // Future<TimeOfDay> _datePicker() async {
-  //   return showDialog<>(
-  //     context: context,
-  //     barrierDismissible: false, // user must tap button!
-  //     builder: (BuildContext context) {
-  //       TextEditingController textEditingController =
-  //       new TextEditingController();
-  //       return AlertDialog(
-  //         title: Text(AppLocalizations.of(context).text('amount_text')),
-  //         content: SingleChildScrollView(
-  //           child: ListBody(
-  //             children: <Widget>[
-  //               Text('${AppLocalizations.of(context).text('amount_text')}'),
-  //               mealText('${AppLocalizations.of(context).text('amount_text')}',
-  //                   textEditingController),
-  //               Text(
-  //                   '${AppLocalizations.of(context).text('amount_help_text')}'),
-  //             ],
-  //           ),
-  //         ),
-  //         actions: <Widget>[
-  //           FlatButton(
-  //             child: Text(AppLocalizations.of(context).text('back_text')),
-  //             onPressed: () {
-  //               Navigator.of(context).pop(0);
-  //             },
-  //           ),
-  //           FlatButton(
-  //             child: Text(AppLocalizations.of(context).text('submit_text')),
-  //             onPressed: () {
-  //               Navigator.of(context)
-  //                   .pop(int.parse(textEditingController.text));
-  //             },
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
   Widget menuList() {
     return this._allMenus == null
@@ -299,8 +252,8 @@ class MealFormState extends State<MealForm> {
                     print('Card $index tapped');
                   },
                   child: Container(
-                    width: 120,
-                    height: 200,
+                    width: 80,
+                    height: 70,
                     child: Column(
                       children: [
                         imageGetter(menu.imageName),
@@ -321,17 +274,17 @@ class MealFormState extends State<MealForm> {
   Widget locationList() {
     return ListView.builder(
         scrollDirection: Axis.vertical,
-        itemCount: 1,
+        itemCount: this.pickupData.length,
         shrinkWrap: false,
         itemBuilder: (context, index) {
           return Card(
             child: Container(
-              width: 120,
+              height: 50,
               child: Column(
                 children: [
-                  Text(this._pickupLocations),
+                  Text(this.pickupData[index].location),
                   Text(
-                    this._pickupTimes.toString(),
+                    this.pickupData[index].time.toString(),
                     overflow: TextOverflow.ellipsis,
                   )
                 ],
