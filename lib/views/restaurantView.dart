@@ -39,11 +39,7 @@ class _RestaurantViewState extends State<RestaurantView> {
     return SafeArea(
         child: Column(
       children: [
-        Container(
-          padding: EdgeInsets.all(10),
-          height: 300,
-          child: topMenuInfo(),
-        ),
+        topMenuInfo(),
         this._dailyMenu == null
             ? Container()
             : Flexible(child: track(this._dailyMenu.dailyMenuID)),
@@ -156,25 +152,12 @@ class _RestaurantViewState extends State<RestaurantView> {
     );
   }
 
-  Widget laterTask(DailyMenu dailyMenu) {
-    return Container(
-        width: double.infinity,
-        color: Colors.black12,
-        child: Center(
-          child: ListTile(
-            leading: imageGetter(dailyMenu.menu.imageName),
-            title: Text(dailyMenu.menu.menuName,
-                style: TextStyle(color: Colors.black45)),
-            subtitle: Text('${dailyMenu.orderNum} / ${dailyMenu.orderLimit}',
-                style: TextStyle(color: Colors.black38)),
-          ),
-        ));
-  }
-
   Widget topMenuInfo() {
     return this._dailyMenu == null
         ? Center(child: CircularProgressIndicator())
         : Container(
+            padding: EdgeInsets.all(10),
+            height: 300,
             child: Card(
               clipBehavior: Clip.antiAlias,
               elevation: 10,
