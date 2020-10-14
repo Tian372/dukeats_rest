@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "894732497180",
+    "firebase_url": "https://dukeeatapp.firebaseio.com",
+    "project_id": "dukeeatapp",
+    "storage_bucket": "dukeeatapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:894732497180:android:90add87a8b74ca9c3a8ad9",
+        "android_client_info": {
+          "package_name": "com.example.dukeats_rest"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "894732497180-ab6um3ahipv6derqoq88u7j3imt02buh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCqhqUwSWQOs4GDMp9JoTlji9ZEWH6tpY8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "894732497180-ab6um3ahipv6derqoq88u7j3imt02buh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "894732497180-1k2aeqhg8j6gbgsnmrbfpqg9f91hvvpi.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.dukeatsClient"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,4 @@
-package com.example.Dukeats
+package com.example.dukeats_rest
 
 import io.flutter.embedding.android.FlutterActivity
 

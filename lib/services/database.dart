@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:Dukeats/models/menu.dart';
+import 'package:Dukeats/models/order.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -124,4 +125,11 @@ class DatabaseMethods {
         .child('images/$imageName')
         .getDownloadURL();
   }
+
+  Future<List<Order>> getPastOrder() async {
+    List<Order> myList = [];
+    myList.add(new Order());
+    return await Future.delayed(Duration(milliseconds: 500), () => myList);
+  }
+
 }

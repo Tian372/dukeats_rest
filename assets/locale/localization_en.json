@@ -20,6 +20,8 @@
 
   "add_menu_text" : "Add a Combo",
 
-  "history_text": "Order History"
+  "history_text": "Order History",
+  "current_order_text": "Current Order",
+  "past_order_text": "Past Order"
 
 }

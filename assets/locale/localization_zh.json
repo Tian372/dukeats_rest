@@ -20,5 +20,7 @@
 
   "add_menu_text" : "添加套餐",
 
-  "history_text": "历史记录"
+  "history_text": "历史记录",
+  "current_order_text": "即將到來",
+  "past_order_text": "過去的訂單"
 }
