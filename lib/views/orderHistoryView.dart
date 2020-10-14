@@ -1,8 +1,14 @@
+import 'package:Dukeats/models/menu.dart';
+import 'package:Dukeats/models/order.dart';
 import 'package:Dukeats/services/database.dart';
+import 'package:Dukeats/views/pastOrderDetailView.dart';
 import 'package:flutter/material.dart';
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/views/post.dart';
-import 'package:Dukeats/models/order.dart';
+
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:grouped_list/grouped_list.dart';
+import 'package:intl/intl.dart';
 import 'package:Dukeats/providers/userLogin.dart';
 import 'package:provider/provider.dart';
 
@@ -12,25 +18,26 @@ class OrderHistoryView extends StatefulWidget {
 }
 
 class _OrderHistoryViewState extends State<OrderHistoryView> {
-  int currentSegment = 0;
-  List<Order> _pastOrderList;
+  int _currentSegment = 0;
+  List<DailyMenu> _pastTaskList;
 
   @override
   void initState() {
     super.initState();
-    getPastOrder();
+    getPastTask();
   }
 
   void onValueChanged(int newValue) {
     setState(() {
-      currentSegment = newValue;
+      _currentSegment = newValue;
     });
   }
 
-  Future<void> getPastOrder() async {
-    List<Order> temp = await DatabaseMethods().getPastOrder();
+  Future<void> getPastTask() async {
+    List<DailyMenu> temp = await DatabaseMethods()
+        .getAllTask(FirebaseAuth.instance.currentUser.uid);
     setState(() {
-      this._pastOrderList = temp;
+      this._pastTaskList = temp;
     });
   }
 
@@ -38,10 +45,10 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
   Widget build(BuildContext context) {
     final tabs = [
       AppLocalizations.of(context).text('past_order_text'),
-      AppLocalizations.of(context).text('current_order_text'),
+      //AppLocalizations.of(context).text('current_order_text'),
     ];
 
-    return this._pastOrderList == null
+    return this._pastTaskList == null
         ? Center(child: CircularProgressIndicator())
         : DefaultTabController(
             length: tabs.length,
@@ -55,27 +62,58 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                   ],
                 ),
               ),
-              body: Scrollbar(
-                child: ListView(
-                  padding: const EdgeInsets.all(8),
-                  children: [
-                    for (final order in _pastOrderList)
-                      OrderGroupCard(order: order)
-                  ],
-                ),
+              body: TabBarView(
+                children: [
+                  for (final tab in tabs) TaskList(taskList: _pastTaskList)
+                ],
               ),
             ),
           );
   }
 }
 
+class TaskList extends StatefulWidget {
+  const TaskList({
+    Key key,
+    this.taskList,
+  }) : super(key: key);
+
+  final List<DailyMenu> taskList;
+
+  @override
+  _TaskListState createState() => _TaskListState();
+}
+
+class _TaskListState extends State<TaskList> {
+  @override
+  Widget build(BuildContext context) {
+    return GroupedListView<DailyMenu, String>(
+        padding: const EdgeInsets.all(8),
+        elements: widget.taskList,
+        groupBy: (element) => DateFormat('yyyy-MM-dd').format(element.postDate),
+        groupSeparatorBuilder: (String value) => Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                value,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+        itemComparator: (item1, item2) =>
+            item1.postDate.compareTo(item2.postDate),
+        order: GroupedListOrder.DESC,
+        itemBuilder: (context, dynamic element) =>
+            OrderGroupCard(deliveryTask: element));
+  }
+}
+
 class OrderGroupCard extends StatefulWidget {
   const OrderGroupCard({
     Key key,
-    this.order,
+    this.deliveryTask,
   }) : super(key: key);
 
-  final Order order;
+  final DailyMenu deliveryTask;
 
   @override
   State<StatefulWidget> createState() => _OrderGroupCardState();
@@ -87,14 +125,16 @@ class _OrderGroupCardState extends State<OrderGroupCard> {
     return Card(
       child: GestureDetector(
         onTap: () {
-          Navigator.of(context, rootNavigator: true).push(
-              MaterialPageRoute(builder: (BuildContext context) => Post()));
+          Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
+              builder: (BuildContext context) => PastOrderDetailView(
+                    deliveryTask: widget.deliveryTask,
+                  )));
         },
-        child: Container(
-          width: 300,
-          height: 100,
-          child: Text('A card that can be tapped' +
-              widget.order.clientEmail.toString()),
+        child: ListTile(
+          title: Text(widget.deliveryTask.menu.menuName,
+              style: TextStyle(fontWeight: FontWeight.w500)),
+          subtitle: Text(widget.deliveryTask.menu.menuName),
+          trailing: Text("money"),
         ),
       ),
     );

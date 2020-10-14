@@ -22,5 +22,10 @@
 
   "history_text": "历史记录",
   "current_order_text": "即將到來",
-  "past_order_text": "過去的訂單"
+  "past_order_text": "過去的訂單",
+  "order_detail_text": "訂單詳情",
+  "order_id_text": "訂單編號",
+  "order_date_text": "Order date",
+  "order_limit_text": "Order limit",
+  "order_quantity_text": "Order quantity"
 }

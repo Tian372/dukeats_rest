@@ -22,6 +22,11 @@
 
   "history_text": "Order History",
   "current_order_text": "Current Order",
-  "past_order_text": "Past Order"
+  "past_order_text": "Past Order",
+  "order_detail_text": "Order Detail",
+  "order_id_text": "Order id",
+  "order_date_text": "Order date",
+  "order_limit_text": "Order limit",
+  "order_quantity_text": "Order quantity"
 
 }

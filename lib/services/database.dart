@@ -5,6 +5,7 @@ import 'package:Dukeats/models/order.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 
 class DatabaseMethods {
   Future<void> saveMenu(Menu menu) async {
@@ -59,6 +60,28 @@ class DatabaseMethods {
       print(e.toString());
     });
 
+    List<DailyMenu> myList = new List();
+    for (int i = 0; i < qs.docs.length; i++) {
+      DailyMenu tmp = DailyMenu.fromJson(qs.docs[i].data());
+      String docId = qs.docs[i].id;
+      tmp.dailyMenuID = docId;
+
+      FirebaseFirestore.instance
+          .collection('dailyMenu')
+          .doc(docId)
+          .collection('pickups')
+          .get()
+          .then((pickUpQs) {
+        for (int j = 0; j < pickUpQs.docs.length; j++) {
+          tmp.pickupInfo.add(Pickups.fromJson(pickUpQs.docs[j].data()));
+        }
+      }).catchError((e) {
+        print(e.toString());
+      });
+
+      myList.add(tmp);
+    }
+    /*
     List<DailyMenu> myList = new List(qs.docs.length);
     for (int i = 0; i < qs.docs.length; i++) {
       DailyMenu tmp = DailyMenu.fromJson(qs.docs[i].data());
@@ -66,6 +89,7 @@ class DatabaseMethods {
       myList.add(tmp);
     }
     myList.sort((a, b) => b.postDate.compareTo(a.postDate));
+    */
     return myList;
   }
 
@@ -131,5 +155,4 @@ class DatabaseMethods {
     myList.add(new Order());
     return await Future.delayed(Duration(milliseconds: 500), () => myList);
   }
-
 }

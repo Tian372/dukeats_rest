@@ -8,7 +8,7 @@ class DailyMenu {
   int orderNum;
   int orderLimit;
   String restaurantID;
-  List<Pickups> pickupInfo;
+  List<Pickups> pickupInfo = new List();
   String dailyMenuID = ''; //read from firebase document id
 
   DailyMenu({
