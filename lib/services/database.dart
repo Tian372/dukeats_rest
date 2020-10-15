@@ -66,19 +66,6 @@ class DatabaseMethods {
       String docId = qs.docs[i].id;
       tmp.dailyMenuID = docId;
 
-      FirebaseFirestore.instance
-          .collection('dailyMenu')
-          .doc(docId)
-          .collection('pickups')
-          .get()
-          .then((pickUpQs) {
-        for (int j = 0; j < pickUpQs.docs.length; j++) {
-          tmp.pickupInfo.add(Pickups.fromJson(pickUpQs.docs[j].data()));
-        }
-      }).catchError((e) {
-        print(e.toString());
-      });
-
       myList.add(tmp);
     }
     /*
@@ -90,6 +77,23 @@ class DatabaseMethods {
     }
     myList.sort((a, b) => b.postDate.compareTo(a.postDate));
     */
+    return myList;
+  }
+
+  Future<List<Pickups>> getDetailByTaskId(String id) async {
+    QuerySnapshot pickupQs = await FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(id)
+        .collection('pickups')
+        .get()
+        .catchError((e) {
+      print(e.toString());
+    });
+    List<Pickups> myList = new List();
+    for (int i = 0; i < pickupQs.docs.length; i++) {
+      Pickups pickups = Pickups.fromJson(pickupQs.docs[i].data());
+      myList.add(pickups);
+    }
     return myList;
   }
 

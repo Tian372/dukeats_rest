@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -11,13 +13,12 @@ class DailyMenu {
   List<Pickups> pickupInfo = new List();
   String dailyMenuID = ''; //read from firebase document id
 
-  DailyMenu({
-    this.orderNum,
-    this.orderLimit,
-    this.restaurantID,
-    this.menu,
-    this.pickupInfo
-  });
+  DailyMenu(
+      {this.orderNum,
+      this.orderLimit,
+      this.restaurantID,
+      this.menu,
+      this.pickupInfo});
 
   Map<String, dynamic> toJson() => {
         'postDate': this.postDate.toUtc(),
@@ -115,8 +116,12 @@ class Pickups {
   Status pickupStatus;
   List<String> orderIDs;
 
-  Pickups(this.pickupID, this.location, this.time, this.pickupStatus,
-      this.orderIDs);
+  Pickups(
+      {this.pickupID,
+      this.location,
+      this.time,
+      this.pickupStatus,
+      this.orderIDs});
 
   Map<String, dynamic> toJson() => {
         'location': this.location,
@@ -125,11 +130,14 @@ class Pickups {
         'orderIDs': this.orderIDs,
       };
 
-  Pickups.fromJson(Map<String, dynamic> json)
-      : this.location = json['location'] as String,
-        this.time = (json['time'] as Timestamp).toDate(),
-        this.pickupStatus = stringToStatus(json['status'] as String),
-        this.orderIDs = (json["orderIDs"] as List<dynamic> ?? [])
-            ?.map((e) => e as String)
-            ?.toList();
+  factory Pickups.fromJson(Map<String, dynamic> json) {
+    Pickups pickups = new Pickups();
+    pickups.location = json['location'] as String;
+    pickups.time = (json['time'] as Timestamp).toDate();
+    pickups.pickupStatus = stringToStatus(json['status'] as String);
+    pickups.orderIDs = (json["orderIDs"] as List<dynamic> ?? [])
+        ?.map((e) => e as String)
+        ?.toList();
+    return pickups;
+  }
 }

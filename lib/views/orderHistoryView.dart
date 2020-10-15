@@ -1,10 +1,8 @@
 import 'package:Dukeats/models/menu.dart';
-import 'package:Dukeats/models/order.dart';
 import 'package:Dukeats/services/database.dart';
 import 'package:Dukeats/views/pastOrderDetailView.dart';
 import 'package:flutter/material.dart';
 import 'package:Dukeats/localization/localization.dart';
-import 'package:Dukeats/views/post.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:grouped_list/grouped_list.dart';

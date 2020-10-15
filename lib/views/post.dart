@@ -215,11 +215,11 @@ class MealFormState extends State<MealForm> {
               child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
                 Pickups data = new Pickups(
-                    '',
-                    locationTextController.text.toString(),
-                    _selectedTime,
-                    Status.OnTime,
-                    null);
+                    pickupID: '',
+                    location: locationTextController.text.toString(),
+                    time: _selectedTime,
+                    pickupStatus: Status.OnTime,
+                    orderIDs: null);
                 Navigator.of(context).pop(data);
               },
             ),

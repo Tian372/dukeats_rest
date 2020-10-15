@@ -34,7 +34,8 @@ class _PastOrderDetailViewState extends State<PastOrderDetailView> {
           ListTile(
               title: Text(
                   AppLocalizations.of(context).text('order_date_text') + ": "),
-              trailing: Text(DateFormat('yyyy-MM-dd hh:mm aaa').format(widget.deliveryTask.postDate))),
+              trailing: Text(DateFormat('yyyy-MM-dd hh:mm aaa')
+                  .format(widget.deliveryTask.postDate))),
           ListTile(
               title: Text(
                   AppLocalizations.of(context).text('order_limit_text') + ": "),
@@ -45,8 +46,9 @@ class _PastOrderDetailViewState extends State<PastOrderDetailView> {
                       ": "),
               trailing: Text(widget.deliveryTask.orderNum.toString())),
           ListTile(
-            title: Text("Individual order detail"),
-          )
+            title: Text("Pickup Location detail: "),
+          ),
+          OrderDetailByLocation(pickupsId: widget.deliveryTask.dailyMenuID)
         ]))));
   }
 }
@@ -54,29 +56,62 @@ class _PastOrderDetailViewState extends State<PastOrderDetailView> {
 class OrderDetailByLocation extends StatefulWidget {
   const OrderDetailByLocation({
     Key key,
-    this.pickups,
+    this.pickupsId,
   }) : super(key: key);
 
-  final List<Pickups> pickups;
+  final String pickupsId;
 
   @override
   State<StatefulWidget> createState() => _OrderDetailByLocationState();
 }
 
 class _OrderDetailByLocationState extends State<OrderDetailByLocation> {
+  List<Pickups> _pickupList;
+
+  @override
+  void initState() {
+    super.initState();
+    getPastTask();
+  }
+
+  Future<void> getPastTask() async {
+    List<Pickups> temp =
+        await DatabaseMethods().getDetailByTaskId(widget.pickupsId);
+    setState(() {
+      this._pickupList = temp;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        for (final pickUpLocation in widget.pickups)
-          Card(
-            child: ListTile(
-              title: Text(pickUpLocation.location),
-              subtitle: Text(pickUpLocation.pickupStatus.toString()),
+    return this._pickupList == null
+        ? Center(child: CircularProgressIndicator())
+        : Container(
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: this._pickupList.length,
+              itemBuilder: (BuildContext context, int index) {
+                return Card(
+                    child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context, rootNavigator: true).push(
+                              MaterialPageRoute(
+                                // ToDo: add individual order detail
+                                  builder: (BuildContext context) => Scaffold(
+                                      appBar: AppBar(),
+                                      body: Text(
+                                          "ToDo: add individual order detail"))));
+                        },
+                        child: ListTile(
+                          title: Text(this._pickupList[index].location),
+                          subtitle: Text(
+                              this._pickupList[index].pickupStatus.toString()),
+                        )));
+              },
+              separatorBuilder: (BuildContext context, int index) =>
+                  const Divider(),
             ),
-          )
-      ],
-    );
+          );
   }
 }
 /*
