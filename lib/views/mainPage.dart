@@ -18,16 +18,7 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
-  static final List<String> languagesList = application.supportedLanguages;
-  static final List<String> languageCodesList =
-      application.supportedLanguagesCodes;
 
-  final Map<dynamic, dynamic> languagesMap = {
-    languagesList[0]: languageCodesList[0],
-    languagesList[1]: languageCodesList[1],
-  };
-
-  String label = languagesList[0];
 
   int _currentIndex = 0;
 
@@ -36,15 +27,15 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    application.onLocaleChanged = onLocaleChange;
-    onLocaleChange(Locale(languagesMap["Chinese"]));
+    // application.onLocaleChanged = onLocaleChange;
+    // onLocaleChange(Locale(languagesMap["Chinese"]));
     WidgetsBinding.instance.addObserver(this);
   }
-  void onLocaleChange(Locale locale) async {
-    setState(() {
-      AppLocalizations.load(locale);
-    });
-  }
+  // void onLocaleChange(Locale locale) async {
+  //   setState(() {
+  //     AppLocalizations.load(locale);
+  //   });
+  // }
 
   @override
   void dispose() {
@@ -78,37 +69,27 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
         _currentIndex = index;
       });
     }
-    void _select(String language) {
-      print("dd "+language);
-      onLocaleChange(Locale(languagesMap[language]));
-      setState(() {
-        if (language == "Chinese") {
-          label = "中文";
-        } else {
-          label = language;
-        }
-      });
-    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: _title[_currentIndex],
-        actions: <Widget>[
-          PopupMenuButton<String>(
-            // overflow menu
-            onSelected: _select,
-            icon: new Icon(Icons.language, color: Colors.white),
-            itemBuilder: (BuildContext context) {
-              return languagesList
-                  .map<PopupMenuItem<String>>((String choice) {
-                return PopupMenuItem<String>(
-                  value: choice,
-                  child: Text(choice),
-                );
-              }).toList();
-            },
-          ),
-        ],
-      ),
+      // appBar: AppBar(
+      //   title: _title[_currentIndex],
+      //   actions: <Widget>[
+      //     PopupMenuButton<String>(
+      //       // overflow menu
+      //       onSelected: _select,
+      //       icon: new Icon(Icons.language, color: Colors.white),
+      //       itemBuilder: (BuildContext context) {
+      //         return languagesList
+      //             .map<PopupMenuItem<String>>((String choice) {
+      //           return PopupMenuItem<String>(
+      //             value: choice,
+      //             child: Text(choice),
+      //           );
+      //         }).toList();
+      //       },
+      //     ),
+      //   ],
+      // ),
       body: _children[_currentIndex], // new
       bottomNavigationBar: BottomNavigationBar(
         fixedColor: Colors.blue,
@@ -135,5 +116,10 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
         ],
       ),
     );
+  }
+
+
+  PopupMenuButton<String> languagePicker(){
+
   }
 }

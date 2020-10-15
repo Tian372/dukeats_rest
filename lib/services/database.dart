@@ -26,7 +26,7 @@ class DatabaseMethods {
       print(e.toString());
     });
     print(dailyMenu.pickupInfo.length);
-    for(Pickups ps in dailyMenu.pickupInfo){
+    for (Pickups ps in dailyMenu.pickupInfo) {
       docRef.collection('pickups').add(ps.toJson());
     }
   }
@@ -118,6 +118,54 @@ class DatabaseMethods {
   Future deliveredByID(String taskID) async {
     FirebaseFirestore.instance.collection('dailyMenu').doc(taskID).update({
       'delivered': true,
+    });
+  }
+
+  Future lateTimeUpdate(
+      String dailyMenuId, String pickupId, int minuteToAdd) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(dailyMenuId)
+        .collection('pickups')
+        .doc(pickupId);
+    var documentSnapshot = await documentReference.get();
+    DateTime ogDT = (documentSnapshot.data()['time'] as Timestamp).toDate();
+    ogDT = ogDT.add(new Duration(minutes: minuteToAdd));
+    documentReference.update({
+      'time': ogDT.toUtc(),
+      'status': 'LATE',
+    });
+  }
+
+  Future onTimeUpdate(String dailyMenuId, String pickupId) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(dailyMenuId)
+        .collection('pickups')
+        .doc(pickupId);
+    documentReference.update({
+      'status': 'ONTM',
+    });
+  }
+
+  Future arrivalUpdate(String dailyMenuId, String pickupId) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(dailyMenuId)
+        .collection('pickups')
+        .doc(pickupId);
+    documentReference.update({
+      'status': 'ARRV',
+    });
+  }
+  Future finishUpdate(String dailyMenuId, String pickupId) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(dailyMenuId)
+        .collection('pickups')
+        .doc(pickupId);
+    documentReference.update({
+      'status': 'FNSH',
     });
   }
 
