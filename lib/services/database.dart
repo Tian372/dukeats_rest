@@ -25,7 +25,6 @@ class DatabaseMethods {
         .catchError((e) {
       print(e.toString());
     });
-    print(dailyMenu.pickupInfo.length);
     for (Pickups ps in dailyMenu.pickupInfo) {
       docRef.collection('pickups').add(ps.toJson());
     }
@@ -59,7 +58,7 @@ class DatabaseMethods {
       print(e.toString());
     });
 
-    List<DailyMenu> myList = new List(qs.docs.length);
+    List<DailyMenu> myList = [];
     for (int i = 0; i < qs.docs.length; i++) {
       DailyMenu tmp = DailyMenu.fromJson(qs.docs[i].data());
       tmp.dailyMenuID = qs.docs[i].id;
@@ -86,9 +85,15 @@ class DatabaseMethods {
         .catchError((e) {
       print(e.toString());
     });
-    DailyMenu dailyMenu = DailyMenu.fromJson(qs.docs[0].data());
-    dailyMenu.dailyMenuID = qs.docs[0].id;
-    return dailyMenu;
+    List<DailyMenu> myList = [];
+    for (int i = 0; i < qs.docs.length; i++) {
+      DailyMenu tmp = DailyMenu.fromJson(qs.docs[i].data());
+      tmp.dailyMenuID = qs.docs[i].id;
+      myList.add(tmp);
+    }
+    myList.sort((a, b) => b.postDate.compareTo(a.postDate));
+
+    return myList.first;
   }
 
   Future<Menu> getMenuById(String menuID) async {
@@ -158,6 +163,24 @@ class DatabaseMethods {
       'status': 'ARRV',
     });
   }
+
+  Future<List<Pickups>> getDetailByTaskId(String id) async {
+    QuerySnapshot pickupQs = await FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(id)
+        .collection('pickups')
+        .get()
+        .catchError((e) {
+      print(e.toString());
+    });
+    List<Pickups> myList = new List();
+    for (int i = 0; i < pickupQs.docs.length; i++) {
+      Pickups pickups = Pickups.fromJson(pickupQs.docs[i].data());
+      myList.add(pickups);
+    }
+    return myList;
+  }
+
   Future finishUpdate(String dailyMenuId, String pickupId) async {
     DocumentReference documentReference = FirebaseFirestore.instance
         .collection('dailyMenu')
@@ -181,6 +204,7 @@ class DatabaseMethods {
         .collection('dailyMenu')
         .doc(id)
         .collection('pickups')
+        .orderBy('time')
         .snapshots();
   }
 }

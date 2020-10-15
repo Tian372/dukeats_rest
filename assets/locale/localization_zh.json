@@ -1,24 +1,27 @@
 {
   "task_text": "任务",
-
   "post_text": "发布",
   "post_today_text": "添加今日送餐信息",
   "info_text": "资料",
-  "restaurant_info_text" : "餐厅资料",
+  "restaurant_info_text": "餐厅资料",
   "email_text": "邮箱",
   "name_text": "名字",
   "phone_text": "电话",
   "address_text": "地址",
   "sell_text": "成交",
-
   "price_text": "价格",
-  "description_text" : "简介",
-  "amount_text" : "套餐数量",
-  "amount_help_text" : "如果没有上限数量，请输入数字零",
-  "back_text" : "返回",
-  "submit_text" : "确认",
-
-  "add_menu_text" : "添加套餐",
-
-  "history_text": "历史记录"
+  "description_text": "简介",
+  "amount_text": "套餐数量",
+  "amount_help_text": "如果没有上限数量，请输入数字零",
+  "back_text": "返回",
+  "submit_text": "确认",
+  "add_menu_text": "添加套餐",
+  "history_text": "历史记录",
+  "current_order_text": "即將到來",
+  "past_order_text": "過去的訂單",
+  "order_detail_text": "訂單詳情",
+  "order_id_text": "訂單編號",
+  "order_date_text": "Order date",
+  "order_limit_text": "Order limit",
+  "order_quantity_text": "Order quantity"
 }

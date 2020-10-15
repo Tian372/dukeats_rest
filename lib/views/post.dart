@@ -249,7 +249,6 @@ class MealFormState extends State<MealForm> {
                       this._selectedIndex = index;
                       this._selectedID = menu.menuID;
                     });
-                    print('Card $index tapped');
                   },
                   child: Container(
                     width: 80,

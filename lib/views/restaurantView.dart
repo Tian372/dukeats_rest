@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/models/menu.dart';
@@ -37,15 +38,60 @@ class _RestaurantViewState extends State<RestaurantView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-          child: Column(
-        children: [
-          topMenuInfo(),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          // Add the app bar to the CustomScrollView.
+          SliverAppBar(
+            // Provide a standard title.
+            title: this._dailyMenu == null
+                ? Text('Task')
+                : Text(this._dailyMenu.menu.menuName),
+            // Allows the user to reveal the app bar if they begin scrolling
+            // back up the list of items.
+            floating: true,
+            pinned: true,
+            snap: false,
+            // Display a placeholder widget to visualize the shrinking size.
+            // flexibleSpace: imageGetter(this._dailyMenu.menu.imageName),
+            flexibleSpace: this._dailyMenu == null
+                ? CircularProgressIndicator(backgroundColor: Colors.white,)
+                : Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      imageGetter(this._dailyMenu.menu.imageName),
+                      Center(
+                        child: ClipRect(
+                          // <-- clips to the 200x200 [Container] below
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: 10.0,
+                              sigmaY: 10.0,
+                            ),
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: 200.0,
+                              height: 200.0,
+                              child: Text(
+                                '\$ ${this._dailyMenu.menu.price}  Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+            expandedHeight: 250,
+          ),
+          // Next, create a SliverList
+
           this._dailyMenu == null
-              ? Container()
-              : Flexible(child: track(this._dailyMenu.dailyMenuID)),
+              ? SliverToBoxAdapter(
+                  child: CircularProgressIndicator(),
+                )
+              : track(this._dailyMenu.dailyMenuID),
         ],
-      )),
+      ),
     );
   }
 
@@ -59,24 +105,25 @@ class _RestaurantViewState extends State<RestaurantView> {
               Pickups ps = Pickups.fromJson(snapshot.data.docs[i].data());
               ps.pickupID = snapshot.data.docs[i].id;
               list.add(ps);
-              print(ps.location);
             }
-            return ListView.builder(
-                scrollDirection: Axis.vertical,
-                itemCount: list.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return trackerTile(list[index]);
-                });
+            return SliverList(
+                delegate: SliverChildBuilderDelegate(
+              (context, index) => trackerTile(list[index]),
+              childCount: list.length,
+            ));
           } else {
-            return CircularProgressIndicator();
+            return SliverToBoxAdapter(
+              child: CircularProgressIndicator(),
+            );
           }
         });
   }
 
   Widget trackerTile(Pickups pickups) {
     return Card(
-      color: pickups.pickupStatus != Status.Finished ? Colors.white70: Colors.blueGrey,
+      color: pickups.pickupStatus != Status.Finished
+          ? Colors.white70
+          : Colors.blueGrey,
       clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
@@ -94,7 +141,8 @@ class _RestaurantViewState extends State<RestaurantView> {
             ),
             trailing: Text(
               '${pickups.time.hour} : ${pickups.time.minute}',
-              style: TextStyle(fontSize: 20, color: Colors.black.withOpacity(0.8)),
+              style:
+                  TextStyle(fontSize: 20, color: Colors.black.withOpacity(0.8)),
             ),
           ),
           ButtonBar(
@@ -145,7 +193,6 @@ class _RestaurantViewState extends State<RestaurantView> {
             child: Card(
               clipBehavior: Clip.antiAlias,
               elevation: 10,
-
               child: Column(
                 children: [
                   imageGetter(this._dailyMenu.menu.imageName),
@@ -159,7 +206,8 @@ class _RestaurantViewState extends State<RestaurantView> {
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 5, 16, 5),
-                    child: Text('Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
+                    child: Text(
+                      'Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
                       style: TextStyle(color: Colors.black.withOpacity(0.6)),
                     ),
                   ),
@@ -175,8 +223,10 @@ class _RestaurantViewState extends State<RestaurantView> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done)
           return Container(
-            padding: EdgeInsets.symmetric(vertical: 5),
-            child: Image.network(snapshot.data.toString()),
+            child: Image.network(
+              snapshot.data.toString(),
+              fit: BoxFit.cover,
+            ),
           );
 
         if (snapshot.connectionState == ConnectionState.waiting)
@@ -307,8 +357,8 @@ class _RestaurantViewState extends State<RestaurantView> {
       builder: (BuildContext context) {
         return AlertDialog(
           //TODO: add chinese
-          title: Text('Are you that the pickup location'),
-          content: Text('This will notify all the users.'),
+          title: Text('Are you sure that you are finished?'),
+          content: Text('you cannot come back.'),
           actions: <Widget>[
             FlatButton(
               child: Text(AppLocalizations.of(context).text('back_text')),

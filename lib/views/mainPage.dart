@@ -50,13 +50,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
   }
 
   Widget navigation() {
-    List<Widget> _title = [
-      Text(AppLocalizations.of(context).text('task_text')),
-      Text(AppLocalizations.of(context).text('post_text')),
-      Text(AppLocalizations.of(context).text('history_text')),
-      Text(AppLocalizations.of(context).text('info_text')),
 
-    ];
     List<Widget> _children = [
       RestaurantView(),
       PostView(),
@@ -102,7 +96,7 @@ class _MainPageState extends State<MainPage> with WidgetsBindingObserver {
             label: AppLocalizations.of(context).text('task_text'),
           ),
           new BottomNavigationBarItem(
-            icon: Icon(Icons.line_weight),
+            icon: Icon(Icons.post_add),
             label: AppLocalizations.of(context).text('post_text'),
           ),
           new BottomNavigationBarItem(
