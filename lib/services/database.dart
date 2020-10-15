@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:Dukeats/models/menu.dart';
 import 'package:Dukeats/models/order.dart';
@@ -20,16 +21,15 @@ class DatabaseMethods {
   }
 
   Future saveDailyMenu(DailyMenu dailyMenu) async {
-    FirebaseFirestore.instance
+    var docRef = await FirebaseFirestore.instance
         .collection("dailyMenu")
         .add(dailyMenu.toJson())
-        .then((docRef) {
-      for (Pickups pickups in dailyMenu.pickupInfo) {
-        docRef.collection('pickups').add(pickups.toJson());
-      }
-    }).catchError((e) {
+        .catchError((e) {
       print(e.toString());
     });
+    for (Pickups ps in dailyMenu.pickupInfo) {
+      docRef.collection('pickups').add(ps.toJson());
+    }
   }
 
   Future<List<Menu>> getAllMenu() async {
@@ -60,23 +60,13 @@ class DatabaseMethods {
       print(e.toString());
     });
 
-    List<DailyMenu> myList = new List();
-    for (int i = 0; i < qs.docs.length; i++) {
-      DailyMenu tmp = DailyMenu.fromJson(qs.docs[i].data());
-      String docId = qs.docs[i].id;
-      tmp.dailyMenuID = docId;
-
-      myList.add(tmp);
-    }
-    /*
-    List<DailyMenu> myList = new List(qs.docs.length);
+    List<DailyMenu> myList = [];
     for (int i = 0; i < qs.docs.length; i++) {
       DailyMenu tmp = DailyMenu.fromJson(qs.docs[i].data());
       tmp.dailyMenuID = qs.docs[i].id;
       myList.add(tmp);
     }
     myList.sort((a, b) => b.postDate.compareTo(a.postDate));
-    */
     return myList;
   }
 
@@ -114,7 +104,15 @@ class DatabaseMethods {
         .catchError((e) {
       print(e.toString());
     });
-    return DailyMenu.fromJson(qs.docs[0].data());
+    List<DailyMenu> myList = [];
+    for (int i = 0; i < qs.docs.length; i++) {
+      DailyMenu tmp = DailyMenu.fromJson(qs.docs[i].data());
+      tmp.dailyMenuID = qs.docs[i].id;
+      myList.add(tmp);
+    }
+    myList.sort((a, b) => b.postDate.compareTo(a.postDate));
+
+    return myList.first;
   }
 
   Future<Menu> getMenuById(String menuID) async {
@@ -142,8 +140,57 @@ class DatabaseMethods {
   }
 
   Future deliveredByID(String taskID) async {
-    Firestore.instance.collection('dailyMenu').doc(taskID).update({
+    FirebaseFirestore.instance.collection('dailyMenu').doc(taskID).update({
       'delivered': true,
+    });
+  }
+
+  Future lateTimeUpdate(
+      String dailyMenuId, String pickupId, int minuteToAdd) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(dailyMenuId)
+        .collection('pickups')
+        .doc(pickupId);
+    var documentSnapshot = await documentReference.get();
+    DateTime ogDT = (documentSnapshot.data()['time'] as Timestamp).toDate();
+    ogDT = ogDT.add(new Duration(minutes: minuteToAdd));
+    documentReference.update({
+      'time': ogDT.toUtc(),
+      'status': 'LATE',
+    });
+  }
+
+  Future onTimeUpdate(String dailyMenuId, String pickupId) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(dailyMenuId)
+        .collection('pickups')
+        .doc(pickupId);
+    documentReference.update({
+      'status': 'ONTM',
+    });
+  }
+
+  Future arrivalUpdate(String dailyMenuId, String pickupId) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(dailyMenuId)
+        .collection('pickups')
+        .doc(pickupId);
+    documentReference.update({
+      'status': 'ARRV',
+    });
+  }
+
+  Future finishUpdate(String dailyMenuId, String pickupId) async {
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(dailyMenuId)
+        .collection('pickups')
+        .doc(pickupId);
+    documentReference.update({
+      'status': 'FNSH',
     });
   }
 
@@ -154,9 +201,12 @@ class DatabaseMethods {
         .getDownloadURL();
   }
 
-  Future<List<Order>> getPastOrder() async {
-    List<Order> myList = [];
-    myList.add(new Order());
-    return await Future.delayed(Duration(milliseconds: 500), () => myList);
+  Stream<QuerySnapshot> getPickUpByDailyMenuID(String id) {
+    return FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(id)
+        .collection('pickups')
+        .orderBy('time')
+        .snapshots();
   }
 }

@@ -7,8 +7,6 @@ import 'package:Dukeats/localization/localization.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:grouped_list/grouped_list.dart';
 import 'package:intl/intl.dart';
-import 'package:Dukeats/providers/userLogin.dart';
-import 'package:provider/provider.dart';
 
 class OrderHistoryView extends StatefulWidget {
   @override
@@ -53,12 +51,14 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
             child: Scaffold(
               appBar: AppBar(
                 //automaticallyImplyLeading: false,
-                title: TabBar(
-                  isScrollable: false,
-                  tabs: [
-                    for (final tab in tabs) Tab(text: tab),
-                  ],
-                ),
+                title: Text(
+                    '${AppLocalizations.of(context).text('past_order_text')}'),
+                // title: TabBar(
+                //   isScrollable: false,
+                //   tabs: [
+                //     for (final tab in tabs) Tab(text: tab),
+                //   ],
+                // ),
               ),
               body: TabBarView(
                 children: [

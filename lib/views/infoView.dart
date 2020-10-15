@@ -1,3 +1,4 @@
+import 'package:Dukeats/localization/application.dart';
 import 'package:Dukeats/localization/localization.dart';
 import 'package:flutter/material.dart';
 
@@ -7,17 +8,72 @@ class InfoView extends StatefulWidget {
 }
 
 class _InfoViewState extends State<InfoView> {
+  static final List<String> languagesList = application.supportedLanguages;
+  static final List<String> languageCodesList =
+      application.supportedLanguagesCodes;
+
+  final Map<dynamic, dynamic> languagesMap = {
+    languagesList[0]: languageCodesList[0],
+    languagesList[1]: languageCodesList[1],
+  };
+
+  String label = languagesList[0];
+
   @override
   void dispose() {
     super.dispose();
   }
 
   @override
+  void initState() {
+    super.initState();
+    application.onLocaleChanged = onLocaleChange;
+    onLocaleChange(Locale(languagesMap["Chinese"]));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Container(
-      child: restaurantInfo(),
-    ));
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Info'),
+        actions: <Widget>[
+          PopupMenuButton<String>(
+            // overflow menu
+            onSelected: _select,
+            icon: new Icon(Icons.language, color: Colors.white),
+            itemBuilder: (BuildContext context) {
+              return languagesList.map<PopupMenuItem<String>>((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(choice),
+                );
+              }).toList();
+            },
+          ),
+        ],
+      ),
+      body: SafeArea(
+          child: Container(
+        child: restaurantInfo(),
+      )),
+    );
+  }
+
+  void onLocaleChange(Locale locale) async {
+    setState(() {
+      AppLocalizations.load(locale);
+    });
+  }
+
+  void _select(String language) {
+    onLocaleChange(Locale(languagesMap[language]));
+    setState(() {
+      if (language == "Chinese") {
+        label = "中文";
+      } else {
+        label = language;
+      }
+    });
   }
 
   Widget restaurantInfo() {
@@ -50,24 +106,30 @@ class _InfoViewState extends State<InfoView> {
                 children: <Widget>[
                   Container(
                     padding: const EdgeInsets.all(10),
-                    child: Center(child: Text('${AppLocalizations.of(context).text('name_text')}: ${restaurant['name']}')),
+                    child: Center(
+                        child: Text(
+                            '${AppLocalizations.of(context).text('name_text')}: ${restaurant['name']}')),
                     color: Colors.teal[100],
                   ),
                   Container(
                     padding: const EdgeInsets.all(10),
-                    child:
-                        Center(child: Text('${AppLocalizations.of(context).text('phone_text')}: ${restaurant['number']}')),
+                    child: Center(
+                        child: Text(
+                            '${AppLocalizations.of(context).text('phone_text')}: ${restaurant['number']}')),
                     color: Colors.teal[200],
                   ),
                   Container(
                     padding: const EdgeInsets.all(10),
                     child: Center(
-                        child: Text('${AppLocalizations.of(context).text('address_text')}: ${restaurant['address']}')),
+                        child: Text(
+                            '${AppLocalizations.of(context).text('address_text')}: ${restaurant['address']}')),
                     color: Colors.teal[300],
                   ),
                   Container(
                     padding: const EdgeInsets.all(10),
-                    child: Center(child: Text('${AppLocalizations.of(context).text('sell_text')}: ${restaurant['sell']}')),
+                    child: Center(
+                        child: Text(
+                            '${AppLocalizations.of(context).text('sell_text')}: ${restaurant['sell']}')),
                     color: Colors.teal[400],
                   ),
                 ],

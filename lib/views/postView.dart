@@ -20,80 +20,85 @@ class _PostViewState extends State<PostView> {
   @override
   Widget build(BuildContext context) {
     double fontsize = 35;
-    return SafeArea(
-        child: Container(
-      padding: EdgeInsets.all(10),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.black12,
-              borderRadius: BorderRadius.all(
-                  Radius.circular(5.0) //         <--- border radius here
-                  ),
-            ),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => MenuPost()));
-              },
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.photo,
-                    size: fontsize,
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    AppLocalizations.of(context).text('add_menu_text'),
-                    style: TextStyle(fontSize: fontsize),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(
-            height: 20,
-          ),
-          Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: Colors.black12,
-              borderRadius: BorderRadius.all(
-                  Radius.circular(5.0) //         <--- border radius here
-                  ),
-            ),
-            child: GestureDetector(
-              onTap: () {
-                Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
-                        builder: (BuildContext context) => Post()));
-              },
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.restaurant,
-                    size: fontsize,
-                  ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text(
-                    AppLocalizations.of(context).text('post_today_text'),
-                    style: TextStyle(fontSize: fontsize),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(AppLocalizations.of(context).text('post_text')),
       ),
-    ));
+      body: SafeArea(
+          child: Container(
+        padding: EdgeInsets.all(10),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.all(
+                    Radius.circular(5.0) //         <--- border radius here
+                    ),
+              ),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => MenuPost()));
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.photo,
+                      size: fontsize,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      AppLocalizations.of(context).text('add_menu_text'),
+                      style: TextStyle(fontSize: fontsize),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Container(
+              padding: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.all(
+                    Radius.circular(5.0) //         <--- border radius here
+                    ),
+              ),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => Post()));
+                },
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.restaurant,
+                      size: fontsize,
+                    ),
+                    SizedBox(
+                      width: 10,
+                    ),
+                    Text(
+                      AppLocalizations.of(context).text('post_today_text'),
+                      style: TextStyle(fontSize: fontsize),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      )),
+    );
   }
 }

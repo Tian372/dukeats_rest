@@ -1,6 +1,10 @@
+import 'dart:math';
+import 'dart:ui';
+
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/models/menu.dart';
 import 'package:Dukeats/services/database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class RestaurantView extends StatefulWidget {
@@ -9,7 +13,22 @@ class RestaurantView extends StatefulWidget {
 }
 
 class _RestaurantViewState extends State<RestaurantView> {
+  DailyMenu _dailyMenu;
   bool isHere = false;
+
+  @override
+  void initState() {
+    super.initState();
+    getDailyMenu();
+  }
+
+  Future<void> getDailyMenu() async {
+    await DatabaseMethods().dailyMenuFuture().then((value) {
+      setState(() {
+        this._dailyMenu = value;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -18,163 +37,177 @@ class _RestaurantViewState extends State<RestaurantView> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Column(
-      children: [
-        Container(
-          height: 300,
-          child: topMenuInfo(),
-        ),
-        Flexible(child: track()),
-      ],
-    ));
-  }
-
-  Widget billboard(DailyMenu dailyMenu) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      height: 200,
-      child: Column(
-        children: <Widget>[
-          Container(
-            //TODO:add Chinese
-            child: Text(
-              "Next Delivery:",
-              style: TextStyle(fontSize: 30),
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(20),
-            child: Row(
-              children: <Widget>[
-                Column(
-                  children: [
-                    IconButton(
-                      icon: Icon(
-                        Icons.check_box,
-                      ),
-                      color: Colors.green,
-                      tooltip: 'On Time',
-                      onPressed: this.isHere
-                          ? null
-                          : () {
-                              Scaffold.of(context).showSnackBar(SnackBar(
-                                  duration: const Duration(seconds: 2),
-                                  content: Text(
-                                      'Customers are notified you are on your way!')));
-                            },
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.more_time,
-                      ),
-                      color: Colors.green,
-                      tooltip: 'Need more time',
-                      onPressed: this.isHere
-                          ? null
-                          : () {
-                              _showAddTimeDialog(this.context);
-                            },
-                    ),
-                  ],
-                ),
-                Column(
-                  children: <Widget>[
-                    Container(
-                      child: imageGetter(dailyMenu.menu.imageName),
-                    ),
-                    Container(
-                      child: Text('Menu Name: ${dailyMenu.menu.menuName}'),
-                    ),
-                    Container(
-                      child: Text('Location: ${dailyMenu.toString()}'),
-                    ),
-                    Container(
-                      child: Text('Time: ${dailyMenu.toString()}'),
-                    ),
-                    Container(
-                      child: Text(
-                          '${dailyMenu.orderNum} / ${dailyMenu.orderLimit}'),
-                    )
-                  ],
-                ),
-                Spacer(
-                  flex: 1,
-                ),
-                Container(
-                  child: Column(
-                    children: [
-                      RaisedButton(
-                        child: this.isHere
-                            ? Text('Finished, next!')
-                            : Text('I am Here'),
-                        color: this.isHere ? Colors.orange : Colors.green,
-                        onPressed: () {
-                          if (this.isHere) {
-                          } else {
-                            if (!isHere) {
-                              setState(() {
-                                this.isHere = true;
-                              });
-                            } else {
-                              DatabaseMethods()
-                                  .deliveredByID(dailyMenu.dailyMenuID);
-                              this.isHere = false;
-                            }
-                          }
-                        },
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: <Widget>[
+          // Add the app bar to the CustomScrollView.
+          SliverAppBar(
+            // Provide a standard title.
+            title: this._dailyMenu == null
+                ? Text('Task')
+                : Text(this._dailyMenu.menu.menuName),
+            // Allows the user to reveal the app bar if they begin scrolling
+            // back up the list of items.
+            floating: true,
+            pinned: true,
+            snap: false,
+            // Display a placeholder widget to visualize the shrinking size.
+            // flexibleSpace: imageGetter(this._dailyMenu.menu.imageName),
+            flexibleSpace: this._dailyMenu == null
+                ? CircularProgressIndicator(backgroundColor: Colors.white,)
+                : Stack(
+                    fit: StackFit.expand,
+                    children: <Widget>[
+                      imageGetter(this._dailyMenu.menu.imageName),
+                      Center(
+                        child: ClipRect(
+                          // <-- clips to the 200x200 [Container] below
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: 10.0,
+                              sigmaY: 10.0,
+                            ),
+                            child: Container(
+                              alignment: Alignment.center,
+                              width: 200.0,
+                              height: 200.0,
+                              child: Text(
+                                '\$ ${this._dailyMenu.menu.price}  Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                ),
-              ],
+            expandedHeight: 250,
+          ),
+          // Next, create a SliverList
+
+          this._dailyMenu == null
+              ? SliverToBoxAdapter(
+                  child: CircularProgressIndicator(),
+                )
+              : track(this._dailyMenu.dailyMenuID),
+        ],
+      ),
+    );
+  }
+
+  Widget track(String dailyMenuID) {
+    return StreamBuilder<QuerySnapshot>(
+        stream: DatabaseMethods().getPickUpByDailyMenuID(dailyMenuID),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List<Pickups> list = [];
+            for (int i = 0; i < snapshot.data.docs.length; i++) {
+              Pickups ps = Pickups.fromJson(snapshot.data.docs[i].data());
+              ps.pickupID = snapshot.data.docs[i].id;
+              list.add(ps);
+            }
+            return SliverList(
+                delegate: SliverChildBuilderDelegate(
+              (context, index) => trackerTile(list[index]),
+              childCount: list.length,
+            ));
+          } else {
+            return SliverToBoxAdapter(
+              child: CircularProgressIndicator(),
+            );
+          }
+        });
+  }
+
+  Widget trackerTile(Pickups pickups) {
+    return Card(
+      color: pickups.pickupStatus != Status.Finished
+          ? Colors.white70
+          : Colors.blueGrey,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          ListTile(
+            leading: Icon(
+              Icons.trip_origin,
+              color: pickups.pickupStatus == Status.Finished
+                  ? Colors.grey
+                  : Colors.blue,
             ),
+            title: Text('${pickups.location}'),
+            subtitle: Text(
+              'Status: ${statusToNormalString(pickups.pickupStatus)}',
+              style: TextStyle(color: Colors.black.withOpacity(0.6)),
+            ),
+            trailing: Text(
+              '${pickups.time.hour} : ${pickups.time.minute}',
+              style:
+                  TextStyle(fontSize: 20, color: Colors.black.withOpacity(0.8)),
+            ),
+          ),
+          ButtonBar(
+            alignment: MainAxisAlignment.start,
+            children: [
+              FlatButton(
+                textColor: const Color(0xFF6200EE),
+                onPressed: pickups.pickupStatus != Status.Arrived &&
+                        pickups.pickupStatus != Status.Finished
+                    ? () => _showOnTimeDialog(context, pickups.pickupID)
+                    : null,
+                child: const Text('On Time'),
+              ),
+              FlatButton(
+                textColor: const Color(0xFF6200EE),
+                onPressed: pickups.pickupStatus == Status.Late ||
+                        pickups.pickupStatus == Status.OnTime
+                    ? () => _showAddTimeDialog(context, pickups.pickupID)
+                    : null,
+                child: const Text('Late'),
+              ),
+              FlatButton(
+                textColor: const Color(0xFF6200EE),
+                onPressed: pickups.pickupStatus == Status.Late ||
+                        pickups.pickupStatus == Status.OnTime
+                    ? () => _showArrivalDialog(context, pickups.pickupID)
+                    : pickups.pickupStatus == Status.Finished
+                        ? null
+                        : () => _showFinishDialog(context, pickups.pickupID),
+                child: pickups.pickupStatus == Status.Finished ||
+                        pickups.pickupStatus == Status.Arrived
+                    ? Text('Finshed')
+                    : Text('I am here!'),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget laterTask(DailyMenu dailyMenu) {
-    return Container(
-        width: double.infinity,
-        color: Colors.black12,
-        child: Center(
-          child: ListTile(
-            leading: imageGetter(dailyMenu.menu.imageName),
-            title: Text(dailyMenu.menu.menuName,
-                style: TextStyle(color: Colors.black45)),
-            subtitle: Text('${dailyMenu.orderNum} / ${dailyMenu.orderLimit}',
-                style: TextStyle(color: Colors.black38)),
-          ),
-        ));
-  }
-
   Widget topMenuInfo() {
-    return FutureBuilder<DailyMenu>(
-      future: DatabaseMethods().dailyMenuFuture(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            snapshot.hasData) {
-          return Container(
+    return this._dailyMenu == null
+        ? Center(child: CircularProgressIndicator())
+        : Container(
+            padding: EdgeInsets.all(10),
+            height: 300,
             child: Card(
               clipBehavior: Clip.antiAlias,
               elevation: 10,
               child: Column(
                 children: [
-                  imageGetter(snapshot.data.menu.imageName),
+                  imageGetter(this._dailyMenu.menu.imageName),
                   ListTile(
                     leading: Icon(Icons.arrow_forward_ios),
-                    title: Text(snapshot.data.menu.menuName),
+                    title: Text(this._dailyMenu.menu.menuName),
                     subtitle: Text(
-                      '\$ ${snapshot.data.menu.price}',
+                      '\$ ${this._dailyMenu.menu.price}',
                       style: TextStyle(color: Colors.black.withOpacity(0.6)),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 5, 16, 5),
                     child: Text(
-                      snapshot.data.menu.description,
+                      'Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
                       style: TextStyle(color: Colors.black.withOpacity(0.6)),
                     ),
                   ),
@@ -182,11 +215,6 @@ class _RestaurantViewState extends State<RestaurantView> {
               ),
             ),
           );
-        } else {
-          return CircularProgressIndicator();
-        }
-      },
-    );
   }
 
   Widget imageGetter(String imageName) {
@@ -195,7 +223,10 @@ class _RestaurantViewState extends State<RestaurantView> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done)
           return Container(
-            child: Image.network(snapshot.data.toString()),
+            child: Image.network(
+              snapshot.data.toString(),
+              fit: BoxFit.cover,
+            ),
           );
 
         if (snapshot.connectionState == ConnectionState.waiting)
@@ -207,8 +238,8 @@ class _RestaurantViewState extends State<RestaurantView> {
     );
   }
 
-  Future<int> _showAddTimeDialog(BuildContext bc) async {
-    return showDialog<int>(
+  Future _showAddTimeDialog(BuildContext bc, String pickupId) async {
+    return showDialog(
       context: context,
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
@@ -216,12 +247,12 @@ class _RestaurantViewState extends State<RestaurantView> {
             new TextEditingController();
         return AlertDialog(
           //TODO: add chinese
-          title: Text('How much more time do you need'),
+          title: Text('How much time do you need?'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 //TODO: add chinese
-                mealText('Time (int for now)', textEditingController),
+                mealText('Time in Minutes', textEditingController)
               ],
             ),
           ),
@@ -229,18 +260,20 @@ class _RestaurantViewState extends State<RestaurantView> {
             FlatButton(
               child: Text(AppLocalizations.of(context).text('back_text')),
               onPressed: () {
-                Navigator.of(context).pop(0);
+                Navigator.of(context).pop();
               },
             ),
             FlatButton(
               child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
-                Navigator.of(context)
-                    .pop(int.parse(textEditingController.text));
+                //TODO: add exception
+                DatabaseMethods().lateTimeUpdate(this._dailyMenu.dailyMenuID,
+                    pickupId, int.parse(textEditingController.text.toString()));
+                Navigator.of(context).pop();
                 Scaffold.of(bc).showSnackBar(SnackBar(
                     duration: const Duration(seconds: 2),
                     content: Text(
-                        '${int.parse(textEditingController.text.toString())} second added')));
+                        '${int.parse(textEditingController.text.toString())} minutes added')));
               },
             ),
           ],
@@ -249,66 +282,108 @@ class _RestaurantViewState extends State<RestaurantView> {
     );
   }
 
-  Widget track() {
-    return Container(
-      margin: EdgeInsets.all(8.0),
-      height: 100.0,
-      child: Row(
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.only(bottom: 4.0),
-                child: Icon(
-                  Icons.trip_origin,
-                  color: Colors.blue,
-                ),
-              ),
-              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
-              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
-              Icon(Icons.fiber_manual_record, color: Colors.grey, size: 12),
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Icon(
-                  Icons.location_on,
-                  color: Colors.red,
-                ),
-              ),
-            ],
-          ),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Container(
-                  height: 40.0,
-                  color: Colors.grey,
-                  child: Center(
-                    child: Text("Your widget here"),
-                  ),
-                ),
-                Container(
-                  height: 40.0,
-                  margin: EdgeInsets.only(top: 4.0),
-                  color: Colors.greenAccent,
-                  child: Center(
-                    child: Text("Your widget here"),
-                  ),
-                ),
-              ],
+  Future _showOnTimeDialog(BuildContext bc, String pickupId) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          //TODO: add chinese
+          title: Text('You are going to arrive on time.'),
+          content: Text('This will notify all the users.'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(AppLocalizations.of(context).text('back_text')),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
             ),
-          ),
-        ],
-      ),
+            FlatButton(
+              child: Text(AppLocalizations.of(context).text('submit_text')),
+              onPressed: () {
+                //TODO: add exception
+                DatabaseMethods()
+                    .onTimeUpdate(this._dailyMenu.dailyMenuID, pickupId);
+                Navigator.of(context).pop();
+                Scaffold.of(bc).showSnackBar(SnackBar(
+                    duration: const Duration(seconds: 2),
+                    content: Text('Notified')));
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
-  Widget trackTile(){
-
+  Future _showArrivalDialog(BuildContext bc, String pickupId) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          //TODO: add chinese
+          title: Text('Are you that the pickup location'),
+          content: Text('This will notify all the users.'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(AppLocalizations.of(context).text('back_text')),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text(AppLocalizations.of(context).text('submit_text')),
+              onPressed: () {
+                //TODO: add exception
+                DatabaseMethods()
+                    .arrivalUpdate(this._dailyMenu.dailyMenuID, pickupId);
+                Navigator.of(context).pop();
+                Scaffold.of(bc).showSnackBar(SnackBar(
+                    duration: const Duration(seconds: 2),
+                    content: Text('Notified')));
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
+
+  Future _showFinishDialog(BuildContext bc, String pickupId) async {
+    return showDialog(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          //TODO: add chinese
+          title: Text('Are you sure that you are finished?'),
+          content: Text('you cannot come back.'),
+          actions: <Widget>[
+            FlatButton(
+              child: Text(AppLocalizations.of(context).text('back_text')),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            FlatButton(
+              child: Text(AppLocalizations.of(context).text('submit_text')),
+              onPressed: () {
+                //TODO: add exception
+                DatabaseMethods()
+                    .finishUpdate(this._dailyMenu.dailyMenuID, pickupId);
+                Navigator.of(context).pop();
+                Scaffold.of(bc).showSnackBar(SnackBar(
+                    duration: const Duration(seconds: 2),
+                    content: Text('Finished')));
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget mealText(String title, TextEditingController textEditingController) {
     return TextFormField(
 //      controller: emailEditingController,

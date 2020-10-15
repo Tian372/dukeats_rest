@@ -96,7 +96,7 @@ class _OrderDetailByLocationState extends State<OrderDetailByLocation> {
                         onTap: () {
                           Navigator.of(context, rootNavigator: true).push(
                               MaterialPageRoute(
-                                // ToDo: add individual order detail
+                                  // ToDo: add individual order detail
                                   builder: (BuildContext context) => Scaffold(
                                       appBar: AppBar(),
                                       body: Text(

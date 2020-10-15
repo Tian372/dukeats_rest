@@ -1,25 +1,22 @@
 {
   "task_text": "Task",
-
   "post_text": "Post",
   "post_today_text": "Post Today's Offer",
   "info_text": "Info",
-  "restaurant_info_text" : "Restaurant Info",
+  "restaurant_info_text": "Restaurant Info",
   "email_text": "Email",
   "name_text": "Name",
   "phone_text": "Phone",
   "address_text": "Address",
   "sell_text": "Sell",
-
   "price_text": "Price",
-  "description_text" : "Description",
-  "amount_text" : "Combo Amount",
-  "amount_help_text" : "Enter zero if there is no limit",
-  "back_text" : "Back",
-  "submit_text" : "Submit",
-
-  "add_menu_text" : "Add a Combo",
-
+  "description_text": "Description",
+  "amount_text": "Combo Amount",
+  "amount_help_text": "Enter zero if there is no limit",
+  "back_text": "Back",
+  "submit_text": "Submit",
+  "add_menu_text": "Add a Combo",
+  "history_text": "Order History",
   "history_text": "Order History",
   "current_order_text": "Current Order",
   "past_order_text": "Past Order",
@@ -28,5 +25,4 @@
   "order_date_text": "Order date",
   "order_limit_text": "Order limit",
   "order_quantity_text": "Order quantity"
-
 }
