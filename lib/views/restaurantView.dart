@@ -44,7 +44,7 @@ class _RestaurantViewState extends State<RestaurantView> {
           SliverAppBar(
             // Provide a standard title.
             title: this._dailyMenu == null
-                ? Text('Task')
+                ? Text('')
                 : Text(this._dailyMenu.menu.menuName),
             // Allows the user to reveal the app bar if they begin scrolling
             // back up the list of items.
@@ -54,7 +54,9 @@ class _RestaurantViewState extends State<RestaurantView> {
             // Display a placeholder widget to visualize the shrinking size.
             // flexibleSpace: imageGetter(this._dailyMenu.menu.imageName),
             flexibleSpace: this._dailyMenu == null
-                ? CircularProgressIndicator(backgroundColor: Colors.white,)
+                ? CircularProgressIndicator(
+                    backgroundColor: Colors.white,
+                  )
                 : Stack(
                     fit: StackFit.expand,
                     children: <Widget>[
@@ -136,7 +138,7 @@ class _RestaurantViewState extends State<RestaurantView> {
             ),
             title: Text('${pickups.location}'),
             subtitle: Text(
-              'Status: ${statusToNormalString(pickups.pickupStatus)}',
+              '${AppLocalizations.of(context).text('status_text')}: ${statusToNormalString(pickups.pickupStatus, context)}',
               style: TextStyle(color: Colors.black.withOpacity(0.6)),
             ),
             trailing: Text(
@@ -154,7 +156,8 @@ class _RestaurantViewState extends State<RestaurantView> {
                         pickups.pickupStatus != Status.Finished
                     ? () => _showOnTimeDialog(context, pickups.pickupID)
                     : null,
-                child: const Text('On Time'),
+                child: Text(
+                    '${AppLocalizations.of(context).text('on_time_text')}'),
               ),
               FlatButton(
                 textColor: const Color(0xFF6200EE),
@@ -162,21 +165,23 @@ class _RestaurantViewState extends State<RestaurantView> {
                         pickups.pickupStatus == Status.OnTime
                     ? () => _showAddTimeDialog(context, pickups.pickupID)
                     : null,
-                child: const Text('Late'),
+                child:
+                    Text('${AppLocalizations.of(context).text('late_text')}'),
               ),
               FlatButton(
-                textColor: const Color(0xFF6200EE),
-                onPressed: pickups.pickupStatus == Status.Late ||
-                        pickups.pickupStatus == Status.OnTime
-                    ? () => _showArrivalDialog(context, pickups.pickupID)
-                    : pickups.pickupStatus == Status.Finished
-                        ? null
-                        : () => _showFinishDialog(context, pickups.pickupID),
-                child: pickups.pickupStatus == Status.Finished ||
-                        pickups.pickupStatus == Status.Arrived
-                    ? Text('Finshed')
-                    : Text('I am here!'),
-              ),
+                  textColor: const Color(0xFF6200EE),
+                  onPressed: pickups.pickupStatus == Status.Late ||
+                          pickups.pickupStatus == Status.OnTime
+                      ? () => _showArrivalDialog(context, pickups.pickupID)
+                      : pickups.pickupStatus == Status.Finished
+                          ? null
+                          : () => _showFinishDialog(context, pickups.pickupID),
+                  child: pickups.pickupStatus == Status.Finished ||
+                          pickups.pickupStatus == Status.Arrived
+                      ? Text(
+                          '${AppLocalizations.of(context).text('finished_text')}')
+                      : Text(
+                          '${AppLocalizations.of(context).text('arrived_text')}')),
             ],
           ),
         ],
@@ -246,13 +251,14 @@ class _RestaurantViewState extends State<RestaurantView> {
         TextEditingController textEditingController =
             new TextEditingController();
         return AlertDialog(
-          //TODO: add chinese
-          title: Text('How much time do you need?'),
+          title: Text(AppLocalizations.of(context).text('add_time_text')),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 //TODO: add chinese
-                mealText('Time in Minutes', textEditingController)
+                addTimeTextBox(
+                    AppLocalizations.of(context).text('time_in_minutes'),
+                    textEditingController)
               ],
             ),
           ),
@@ -289,8 +295,8 @@ class _RestaurantViewState extends State<RestaurantView> {
       builder: (BuildContext context) {
         return AlertDialog(
           //TODO: add chinese
-          title: Text('You are going to arrive on time.'),
-          content: Text('This will notify all the users.'),
+          title: Text(AppLocalizations.of(context).text('on_time_line1')),
+          content: Text(AppLocalizations.of(context).text('will_notify_text')),
           actions: <Widget>[
             FlatButton(
               child: Text(AppLocalizations.of(context).text('back_text')),
@@ -301,13 +307,13 @@ class _RestaurantViewState extends State<RestaurantView> {
             FlatButton(
               child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
-                //TODO: add exception
                 DatabaseMethods()
                     .onTimeUpdate(this._dailyMenu.dailyMenuID, pickupId);
                 Navigator.of(context).pop();
                 Scaffold.of(bc).showSnackBar(SnackBar(
                     duration: const Duration(seconds: 2),
-                    content: Text('Notified')));
+                    content: Text(
+                        AppLocalizations.of(context).text('notified_text'))));
               },
             ),
           ],
@@ -322,9 +328,8 @@ class _RestaurantViewState extends State<RestaurantView> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          //TODO: add chinese
-          title: Text('Are you that the pickup location'),
-          content: Text('This will notify all the users.'),
+          title: Text(AppLocalizations.of(context).text('arrival_line1')),
+          content: Text(AppLocalizations.of(context).text('will_notify_text')),
           actions: <Widget>[
             FlatButton(
               child: Text(AppLocalizations.of(context).text('back_text')),
@@ -335,13 +340,13 @@ class _RestaurantViewState extends State<RestaurantView> {
             FlatButton(
               child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
-                //TODO: add exception
                 DatabaseMethods()
                     .arrivalUpdate(this._dailyMenu.dailyMenuID, pickupId);
                 Navigator.of(context).pop();
                 Scaffold.of(bc).showSnackBar(SnackBar(
                     duration: const Duration(seconds: 2),
-                    content: Text('Notified')));
+                    content: Text(
+                        AppLocalizations.of(context).text('notified_text'))));
               },
             ),
           ],
@@ -356,9 +361,8 @@ class _RestaurantViewState extends State<RestaurantView> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          //TODO: add chinese
-          title: Text('Are you sure that you are finished?'),
-          content: Text('you cannot come back.'),
+          title: Text(AppLocalizations.of(context).text('finished_line1')),
+          //content: Text('you cannot come back.'),
           actions: <Widget>[
             FlatButton(
               child: Text(AppLocalizations.of(context).text('back_text')),
@@ -369,13 +373,13 @@ class _RestaurantViewState extends State<RestaurantView> {
             FlatButton(
               child: Text(AppLocalizations.of(context).text('submit_text')),
               onPressed: () {
-                //TODO: add exception
                 DatabaseMethods()
                     .finishUpdate(this._dailyMenu.dailyMenuID, pickupId);
                 Navigator.of(context).pop();
                 Scaffold.of(bc).showSnackBar(SnackBar(
                     duration: const Duration(seconds: 2),
-                    content: Text('Finished')));
+                    content: Text(
+                        AppLocalizations.of(context).text('finished_text'))));
               },
             ),
           ],
@@ -384,16 +388,15 @@ class _RestaurantViewState extends State<RestaurantView> {
     );
   }
 
-  Widget mealText(String title, TextEditingController textEditingController) {
+  Widget addTimeTextBox(
+      String title, TextEditingController textEditingController) {
     return TextFormField(
-//      controller: emailEditingController,
-//      validator: (val) {
-//        return RegExp(
-//                    r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
-//                .hasMatch(val)
-//            ? null
-//            : "Enter correct email";
-//      },
+      validator: (val) {
+        return RegExp(r"^([+]?[0-9]\d*|0)$").hasMatch(val)
+            ? null
+            : "Enter correct time";
+      },
+      keyboardType: TextInputType.number,
       controller: textEditingController,
       decoration: InputDecoration(
           border:

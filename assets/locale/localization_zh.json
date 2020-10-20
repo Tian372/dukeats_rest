@@ -21,7 +21,24 @@
   "past_order_text": "過去的訂單",
   "order_detail_text": "訂單詳情",
   "order_id_text": "訂單編號",
-  "order_date_text": "Order date",
-  "order_limit_text": "Order limit",
-  "order_quantity_text": "Order quantity"
+  "order_date_text": "订购时间",
+  "order_limit_text": "订购限额",
+  "order_quantity_text": "订购数量",
+  "on_time_text": "准时",
+  "late_text": "迟到",
+  "arrived_text": "到达",
+  "finished_text": "完成",
+
+  "add_time_text": "预计迟到时间",
+  "time_in_minutes": "分钟",
+
+  "on_time_line1": "确定准时到达",
+  "will_notify_text" : "提醒所有买家",
+  "notified_text": "推送已发送",
+
+  "arrival_line1": "已到达送餐地点?",
+
+  "finished_line1": "完成这一站的送餐了吗?",
+
+  "status_text" : "送餐状态"
 }

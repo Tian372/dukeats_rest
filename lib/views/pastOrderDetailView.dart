@@ -25,7 +25,7 @@ class _PastOrderDetailViewState extends State<PastOrderDetailView> {
             title:
                 Text(AppLocalizations.of(context).text('order_detail_text'))),
         body: SafeArea(
-            child: Scrollbar(
+            child: SingleChildScrollView(
                 child: Column(children: <Widget>[
           ListTile(
               title: Text(
@@ -86,8 +86,7 @@ class _OrderDetailByLocationState extends State<OrderDetailByLocation> {
   Widget build(BuildContext context) {
     return this._pickupList == null
         ? Center(child: CircularProgressIndicator())
-        : Container(
-            child: ListView.separated(
+        : ListView.separated(
               shrinkWrap: true,
               itemCount: this._pickupList.length,
               itemBuilder: (BuildContext context, int index) {
@@ -110,8 +109,7 @@ class _OrderDetailByLocationState extends State<OrderDetailByLocation> {
               },
               separatorBuilder: (BuildContext context, int index) =>
                   const Divider(),
-            ),
-          );
+            );
   }
 }
 /*
