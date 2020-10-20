@@ -1,3 +1,5 @@
+
+import 'package:Dukeats/localization/localization.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -92,16 +94,16 @@ String statusToString(Status status) {
   }
 }
 
-String statusToNormalString(Status status) {
+String statusToNormalString(Status status, BuildContext context) {
   switch (status) {
     case Status.OnTime:
-      return 'On Time';
+      return AppLocalizations.of(context).text('on_time_text');
     case Status.Late:
-      return 'Late';
+      return AppLocalizations.of(context).text('late_text');
     case Status.Arrived:
-      return 'Arrived';
+      return AppLocalizations.of(context).text('arrived_text');
     case Status.Finished:
-      return 'Finished';
+      return AppLocalizations.of(context).text('finished_text');
     default:
       return '';
   }

@@ -111,7 +111,7 @@ class MealFormState extends State<MealForm> {
         });
       },
       child:
-          Text('${AppLocalizations.of(context).text('amount_text')}: $_amount'),
+      Text('${AppLocalizations.of(context).text('amount_text')}: $_amount'),
     );
   }
 
@@ -136,7 +136,7 @@ class MealFormState extends State<MealForm> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         TextEditingController textEditingController =
-            new TextEditingController();
+        new TextEditingController();
         return AlertDialog(
           title: Text(AppLocalizations.of(context).text('amount_text')),
           content: SingleChildScrollView(
@@ -175,8 +175,7 @@ class MealFormState extends State<MealForm> {
       context: context,
       builder: (BuildContext context) {
         TextEditingController locationTextController =
-            new TextEditingController();
-        // TextEditingController timeController = new TextEditingController();
+        new TextEditingController();
         DateTime _selectedTime;
         return AlertDialog(
           //TODO: translation
@@ -186,16 +185,19 @@ class MealFormState extends State<MealForm> {
               children: <Widget>[
                 Text('Location:'),
                 mealText('location', locationTextController),
-                Text('Time (int for now):'),
+                Text('Time: '),
                 // mealText('Time', timeController),
                 FlatButton(
-                    child: Text('Time Picker Test'),
+                    child: Text('Pick Your Time'),
                     onPressed: () {
                       showTimePicker(
-                              context: context,
-                              initialTime:
-                                  TimeOfDay.fromDateTime(new DateTime.now()))
+                          context: context,
+                          initialTime:
+                          TimeOfDay.fromDateTime(new DateTime.now()))
                           .then((value) {
+                        if (value == null) {
+
+                        }
                         final now = new DateTime.now();
                         _selectedTime = new DateTime(now.year, now.month,
                             now.day, value.hour, value.minute);
@@ -233,41 +235,41 @@ class MealFormState extends State<MealForm> {
     return this._allMenus == null
         ? Container()
         : ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: this._allMenus.length,
-            shrinkWrap: false,
-            itemBuilder: (context, index) {
-              Menu menu = this._allMenus[index];
-              return Card(
-                color: index == this._selectedIndex
-                    ? Colors.blue
-                    : Colors.transparent,
-                child: InkWell(
-                  splashColor: Colors.blue.withAlpha(30),
-                  onTap: () {
-                    setState(() {
-                      this._selectedIndex = index;
-                      this._selectedID = menu.menuID;
-                    });
-                  },
-                  child: Container(
-                    width: 80,
-                    height: 70,
-                    child: Column(
-                      children: [
-                        imageGetter(menu.imageName),
-                        Text(menu.menuName),
-                        Text('\$ ${menu.price}'),
-                        Text(
-                          menu.menuID,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      ],
-                    ),
-                  ),
+        scrollDirection: Axis.horizontal,
+        itemCount: this._allMenus.length,
+        shrinkWrap: false,
+        itemBuilder: (context, index) {
+          Menu menu = this._allMenus[index];
+          return Card(
+            color: index == this._selectedIndex
+                ? Colors.blue
+                : Colors.transparent,
+            child: InkWell(
+              splashColor: Colors.blue.withAlpha(30),
+              onTap: () {
+                setState(() {
+                  this._selectedIndex = index;
+                  this._selectedID = menu.menuID;
+                });
+              },
+              child: Container(
+                width: 80,
+                height: 70,
+                child: Column(
+                  children: [
+                    imageGetter(menu.imageName),
+                    Text(menu.menuName),
+                    Text('\$ ${menu.price}'),
+                    Text(
+                      menu.menuID,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  ],
                 ),
-              );
-            });
+              ),
+            ),
+          );
+        });
   }
 
   Widget locationList() {
@@ -306,7 +308,7 @@ class MealFormState extends State<MealForm> {
       controller: textEditingController,
       decoration: InputDecoration(
           border:
-              OutlineInputBorder(borderRadius: new BorderRadius.circular(10.0)),
+          OutlineInputBorder(borderRadius: new BorderRadius.circular(10.0)),
           labelText: title),
     );
   }

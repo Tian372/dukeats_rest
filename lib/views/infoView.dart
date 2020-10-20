@@ -28,7 +28,7 @@ class _InfoViewState extends State<InfoView> {
   void initState() {
     super.initState();
     application.onLocaleChanged = onLocaleChange;
-    onLocaleChange(Locale(languagesMap["Chinese"]));
+    onLocaleChange(Locale(languagesMap["English"]));
   }
 
   @override
