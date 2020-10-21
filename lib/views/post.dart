@@ -178,64 +178,75 @@ class MealFormState extends State<MealForm> {
           return AlertDialog(
             //TODO: translation
             title: Text('Add a new pick-up location and time'),
-            content: StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-                return SingleChildScrollView(
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        TextFormField(
-                            onSaved: (value) => {location = value},
-                            decoration: InputDecoration(hintText: "Location")),
-                        FlatButton(
-                            child: Text(times[0] == 0
-                                ? 'Pick Your Delivery Date'
-                                : '${times[0]}/${times[1]}/${times[2]}'),
-                            onPressed: () {
-                              showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(2020),
-                                lastDate: DateTime(2025),
-                              ).then((value) {
-                                setState(() {
-                                  times[0] = value.year;
-                                  times[1] = value.month;
-                                  times[2] = value.day;
-                                });
-                              });
-                            }),
-                        DropdownButtonFormField<int>(
-                          items:
-                              List<int>.generate(24, (int index) => index + 1)
-                                  .map<DropdownMenuItem<int>>((int value) {
-                            return DropdownMenuItem<int>(
-                              value: value,
-                              child: Text(value.toString()),
-                            );
-                          }).toList(),
-                          hint: Text('Hours'),
-                          onChanged: (value) => times[3] = value,
-                        ),
-                        DropdownButtonFormField<int>(
-                          items:
-                              List<int>.generate(59, (int index) => index + 1)
-                                  .map<DropdownMenuItem<int>>((int value) {
-                            return DropdownMenuItem<int>(
-                              value: value,
-                              child: Text(value.toString()),
-                            );
-                          }).toList(),
-                          hint: Text('Minutes'),
-                          onChanged: (value) => times[4] = value,
-                        )
-                      ],
+            content: SingleChildScrollView(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      onSaved: (value) => {location = value},
+                      decoration: InputDecoration(hintText: "Location"),
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return '*';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                );
-              },
+                    DatePickerFormField(
+                      context,
+                      validator: (value) {
+                        if (value == null)
+                          return '*';
+                        else {
+                          return null;
+                        }
+                      },
+                      onSaved: (value) {
+                        times[0] = value.year;
+                        times[1] = value.month;
+                        times[2] = value.day;
+                      },
+                    ),
+                    DropdownButtonFormField<int>(
+                      items: List<int>.generate(24, (int index) => index + 1)
+                          .map<DropdownMenuItem<int>>((int value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text(value.toString()),
+                        );
+                      }).toList(),
+                      hint: Text('Hours'),
+                      onChanged: (value) => times[3] = value,
+                      validator: (value) {
+                        if (value == null) {
+                          return '*';
+                        }
+                        return null;
+                      },
+                    ),
+                    DropdownButtonFormField<int>(
+                      items: List<int>.generate(59, (int index) => index + 1)
+                          .map<DropdownMenuItem<int>>((int value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text(value.toString()),
+                        );
+                      }).toList(),
+                      hint: Text('Minutes'),
+                      onChanged: (value) => times[4] = value,
+                      validator: (value) {
+                        if (value == null) {
+                          return '*';
+                        }
+                        return null;
+                      },
+                    )
+                  ],
+                ),
+              ),
             ),
+
             actions: <Widget>[
               FlatButton(
                 child: Text(AppLocalizations.of(context).text('back_text')),
@@ -246,12 +257,14 @@ class MealFormState extends State<MealForm> {
               FlatButton(
                 child: Text(AppLocalizations.of(context).text('submit_text')),
                 onPressed: () {
-                  _formKey.currentState.save();
-                  DateTime selectedTime = new DateTime(
-                      times[0], times[1], times[2], times[3], times[4]);
-                  Pickups data = new Pickups(
-                      '', location, selectedTime, Status.OnTime, null);
-                  Navigator.of(context).pop(data);
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+                    DateTime selectedTime = new DateTime(
+                        times[0], times[1], times[2], times[3], times[4]);
+                    Pickups data = new Pickups(
+                        '', location, selectedTime, Status.OnTime, null);
+                    Navigator.of(context).pop(data);
+                  }
                 },
               ),
             ],
@@ -324,17 +337,13 @@ class MealFormState extends State<MealForm> {
                   ),
                 ),
                 IconButton(
-                    icon: Icon(
-                      Icons.backspace_outlined,
-                      color: Colors.red,
-                      size: 25
-                    ),
-                    onPressed: (){
-                      setState((){
+                    icon: Icon(Icons.backspace_outlined,
+                        color: Colors.red, size: 25),
+                    onPressed: () {
+                      setState(() {
                         this.pickupData.removeAt(index);
                       });
                     })
-
               ],
             ),
           );
@@ -406,4 +415,37 @@ class MealFormState extends State<MealForm> {
       onChanged: (value) => times[1] = value,
     );
   }
+}
+
+class DatePickerFormField extends FormField<DateTime> {
+  DatePickerFormField(
+    BuildContext context, {
+    FormFieldSetter<DateTime> onSaved,
+    FormFieldValidator<DateTime> validator,
+    DateTime initialValue,
+  }) : super(
+            onSaved: onSaved,
+            validator: validator,
+            initialValue: initialValue,
+            builder: (FormFieldState<DateTime> state) {
+              return FlatButton(
+                  child: Text(
+                    state.value == null
+                        ? 'Pick Your Delivery Date'
+                        : '${state.value.year}/${state.value.month}/${state.value.year}',
+                    style: TextStyle(
+                        color:
+                            state.hasError ? Colors.redAccent : Colors.black),
+                  ),
+                  onPressed: () {
+                    showDatePicker(
+                      context: context,
+                      initialDate: DateTime.now(),
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2025),
+                    ).then((value) {
+                      state.didChange(value);
+                    });
+                  });
+            });
 }
