@@ -34,6 +34,7 @@ class MealFormState extends State<MealForm> {
   int _amount = 0;
   int _selectedIndex = -1;
   List<Menu> _allMenus;
+  List<String> _imageUrls;
 
   List<Pickups> pickupData = [];
 
@@ -45,7 +46,13 @@ class MealFormState extends State<MealForm> {
 
   Future<void> getMenus() async {
     List<Menu> temp = await DatabaseMethods().getAllMenu();
+    List<String> images = [];
+    for (Menu menu in temp) {
+      String url = await DatabaseMethods().loadImage(menu.imageName) as String;
+      images.add(url);
+    }
     setState(() {
+      this._imageUrls = images;
       this._allMenus = temp;
     });
   }
@@ -57,7 +64,7 @@ class MealFormState extends State<MealForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Container(width: double.infinity, height: 150, child: menuList()),
+          Container(width: double.infinity, height: 120, child: menuList()),
           amount(),
           location(),
           Flexible(child: locationList()),
@@ -274,7 +281,7 @@ class MealFormState extends State<MealForm> {
 
   Widget menuList() {
     return this._allMenus == null
-        ? Container()
+        ? Center(child: CircularProgressIndicator())
         : ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: this._allMenus.length,
@@ -293,17 +300,18 @@ class MealFormState extends State<MealForm> {
                     });
                   },
                   child: Container(
-                    width: 80,
-                    height: 70,
+                    width: 100,
                     child: Column(
                       children: [
-                        imageGetter(menu.imageName),
-                        Text(menu.menuName),
-                        Text('\$ ${menu.price}'),
+                        Container(
+                            height: 50,
+                            width: 50,
+                            child: Image.network(this._imageUrls[index])),
                         Text(
-                          menu.menuID,
+                          menu.menuName,
                           overflow: TextOverflow.ellipsis,
-                        )
+                        ),
+                        Text('\$ ${menu.price}'),
                       ],
                     ),
                   ),
@@ -368,25 +376,25 @@ class MealFormState extends State<MealForm> {
     );
   }
 
-  Widget imageGetter(String imageName) {
-    return FutureBuilder(
-      future: DatabaseMethods().loadImage(imageName),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.done)
-          return Container(
-            height: 40,
-            width: 40,
-            child: Image.network(snapshot.data.toString()),
-          );
-
-        if (snapshot.connectionState == ConnectionState.waiting)
-          return Container(
-              height: 40, width: 40, child: CircularProgressIndicator());
-
-        return Container();
-      },
-    );
-  }
+  // Widget imageGetter(String imageName) {
+  //   return FutureBuilder(
+  //     future: DatabaseMethods().loadImage(imageName),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.done)
+  //         return Container(
+  //           height: 40,
+  //           width: 40,
+  //           child: Image.network(snapshot.data.toString()),
+  //         );
+  //
+  //       if (snapshot.connectionState == ConnectionState.waiting)
+  //         return Container(
+  //             height: 40, width: 40, child: CircularProgressIndicator());
+  //
+  //       return Container();
+  //     },
+  //   );
+  // }
 
   Widget hourDropDown(List<int> times) {
     return DropdownButtonFormField<int>(
