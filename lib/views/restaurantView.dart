@@ -404,4 +404,6 @@ class _RestaurantViewState extends State<RestaurantView> {
           labelText: title),
     );
   }
+
+
 }

@@ -32,11 +32,9 @@ class MealForm extends StatefulWidget {
 class MealFormState extends State<MealForm> {
   final _formKey = GlobalKey<FormState>();
   int _amount = 0;
-  String _selectedID;
   int _selectedIndex = -1;
   List<Menu> _allMenus;
 
-  // //TODO: need to change to currect time format
   List<Pickups> pickupData = [];
 
   @override
@@ -111,7 +109,7 @@ class MealFormState extends State<MealForm> {
         });
       },
       child:
-      Text('${AppLocalizations.of(context).text('amount_text')}: $_amount'),
+          Text('${AppLocalizations.of(context).text('amount_text')}: $_amount'),
     );
   }
 
@@ -136,7 +134,7 @@ class MealFormState extends State<MealForm> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         TextEditingController textEditingController =
-        new TextEditingController();
+            new TextEditingController();
         return AlertDialog(
           title: Text(AppLocalizations.of(context).text('amount_text')),
           content: SingleChildScrollView(
@@ -172,104 +170,133 @@ class MealFormState extends State<MealForm> {
 
   Future<Pickups> _showAddLocation() async {
     return showDialog<Pickups>(
-      context: context,
-      builder: (BuildContext context) {
-        TextEditingController locationTextController =
-        new TextEditingController();
-        DateTime _selectedTime;
-        return AlertDialog(
-          //TODO: translation
-          title: Text('Add a new pick-up location and time'),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Location:'),
-                mealText('location', locationTextController),
-                Text('Time: '),
-                // mealText('Time', timeController),
-                FlatButton(
-                    child: Text('Pick Your Time'),
-                    onPressed: () {
-                      showTimePicker(
-                          context: context,
-                          initialTime:
-                          TimeOfDay.fromDateTime(new DateTime.now()))
-                          .then((value) {
-                        if (value == null) {
-
-                        }
-                        final now = new DateTime.now();
-                        _selectedTime = new DateTime(now.year, now.month,
-                            now.day, value.hour, value.minute);
-                      });
-                    })
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            FlatButton(
-              child: Text(AppLocalizations.of(context).text('back_text')),
-              onPressed: () {
-                Navigator.of(context).pop(null);
+        context: context,
+        builder: (BuildContext context) {
+          String location = '';
+          List<int> times = List<int>.generate(5, (int index) => 0);
+          final _formKey = GlobalKey<FormState>();
+          return AlertDialog(
+            //TODO: translation
+            title: Text('Add a new pick-up location and time'),
+            content: StatefulBuilder(
+              builder: (BuildContext context, StateSetter setState) {
+                return SingleChildScrollView(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        TextFormField(
+                            onSaved: (value) => {location = value},
+                            decoration: InputDecoration(hintText: "Location")),
+                        FlatButton(
+                            child: Text(times[0] == 0
+                                ? 'Pick Your Delivery Date'
+                                : '${times[0]}/${times[1]}/${times[2]}'),
+                            onPressed: () {
+                              showDatePicker(
+                                context: context,
+                                initialDate: DateTime.now(),
+                                firstDate: DateTime(2020),
+                                lastDate: DateTime(2025),
+                              ).then((value) {
+                                setState(() {
+                                  times[0] = value.year;
+                                  times[1] = value.month;
+                                  times[2] = value.day;
+                                });
+                              });
+                            }),
+                        DropdownButtonFormField<int>(
+                          items:
+                              List<int>.generate(24, (int index) => index + 1)
+                                  .map<DropdownMenuItem<int>>((int value) {
+                            return DropdownMenuItem<int>(
+                              value: value,
+                              child: Text(value.toString()),
+                            );
+                          }).toList(),
+                          hint: Text('Hours'),
+                          onChanged: (value) => times[3] = value,
+                        ),
+                        DropdownButtonFormField<int>(
+                          items:
+                              List<int>.generate(59, (int index) => index + 1)
+                                  .map<DropdownMenuItem<int>>((int value) {
+                            return DropdownMenuItem<int>(
+                              value: value,
+                              child: Text(value.toString()),
+                            );
+                          }).toList(),
+                          hint: Text('Minutes'),
+                          onChanged: (value) => times[4] = value,
+                        )
+                      ],
+                    ),
+                  ),
+                );
               },
             ),
-            FlatButton(
-              child: Text(AppLocalizations.of(context).text('submit_text')),
-              onPressed: () {
-                Pickups data = new Pickups(
-                    '',
-                    locationTextController.text.toString(),
-                    _selectedTime,
-                    Status.OnTime,
-                    null);
-                Navigator.of(context).pop(data);
-              },
-            ),
-          ],
-        );
-      },
-    );
+            actions: <Widget>[
+              FlatButton(
+                child: Text(AppLocalizations.of(context).text('back_text')),
+                onPressed: () {
+                  Navigator.of(context).pop(null);
+                },
+              ),
+              FlatButton(
+                child: Text(AppLocalizations.of(context).text('submit_text')),
+                onPressed: () {
+                  _formKey.currentState.save();
+                  DateTime selectedTime = new DateTime(
+                      times[0], times[1], times[2], times[3], times[4]);
+                  Pickups data = new Pickups(
+                      '', location, selectedTime, Status.OnTime, null);
+                  Navigator.of(context).pop(data);
+                },
+              ),
+            ],
+          );
+        });
   }
 
   Widget menuList() {
     return this._allMenus == null
         ? Container()
         : ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: this._allMenus.length,
-        shrinkWrap: false,
-        itemBuilder: (context, index) {
-          Menu menu = this._allMenus[index];
-          return Card(
-            color: index == this._selectedIndex
-                ? Colors.blue
-                : Colors.transparent,
-            child: InkWell(
-              splashColor: Colors.blue.withAlpha(30),
-              onTap: () {
-                setState(() {
-                  this._selectedIndex = index;
-                  this._selectedID = menu.menuID;
-                });
-              },
-              child: Container(
-                width: 80,
-                height: 70,
-                child: Column(
-                  children: [
-                    imageGetter(menu.imageName),
-                    Text(menu.menuName),
-                    Text('\$ ${menu.price}'),
-                    Text(
-                      menu.menuID,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  ],
+            scrollDirection: Axis.horizontal,
+            itemCount: this._allMenus.length,
+            shrinkWrap: false,
+            itemBuilder: (context, index) {
+              Menu menu = this._allMenus[index];
+              return Card(
+                color: index == this._selectedIndex
+                    ? Colors.blue
+                    : Colors.transparent,
+                child: InkWell(
+                  splashColor: Colors.blue.withAlpha(30),
+                  onTap: () {
+                    setState(() {
+                      this._selectedIndex = index;
+                    });
+                  },
+                  child: Container(
+                    width: 80,
+                    height: 70,
+                    child: Column(
+                      children: [
+                        imageGetter(menu.imageName),
+                        Text(menu.menuName),
+                        Text('\$ ${menu.price}'),
+                        Text(
+                          menu.menuID,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          );
-        });
+              );
+            });
   }
 
   Widget locationList() {
@@ -278,18 +305,37 @@ class MealFormState extends State<MealForm> {
         itemCount: this.pickupData.length,
         shrinkWrap: false,
         itemBuilder: (context, index) {
-          return Card(
-            child: Container(
-              height: 50,
-              child: Column(
-                children: [
-                  Text(this.pickupData[index].location),
-                  Text(
-                    this.pickupData[index].time.toString(),
-                    overflow: TextOverflow.ellipsis,
-                  )
-                ],
-              ),
+          return Container(
+            height: 50,
+            width: double.infinity,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Card(
+                    child: Column(
+                      children: [
+                        Text(this.pickupData[index].location),
+                        Text(
+                          this.pickupData[index].time.toString(),
+                          overflow: TextOverflow.ellipsis,
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+                IconButton(
+                    icon: Icon(
+                      Icons.backspace_outlined,
+                      color: Colors.red,
+                      size: 25
+                    ),
+                    onPressed: (){
+                      setState((){
+                        this.pickupData.removeAt(index);
+                      });
+                    })
+
+              ],
             ),
           );
         });
@@ -308,7 +354,7 @@ class MealFormState extends State<MealForm> {
       controller: textEditingController,
       decoration: InputDecoration(
           border:
-          OutlineInputBorder(borderRadius: new BorderRadius.circular(10.0)),
+              OutlineInputBorder(borderRadius: new BorderRadius.circular(10.0)),
           labelText: title),
     );
   }
@@ -330,6 +376,34 @@ class MealFormState extends State<MealForm> {
 
         return Container();
       },
+    );
+  }
+
+  Widget hourDropDown(List<int> times) {
+    return DropdownButtonFormField<int>(
+      items: List<int>.generate(24, (int index) => index + 1)
+          .map<DropdownMenuItem<int>>((int value) {
+        return DropdownMenuItem<int>(
+          value: value,
+          child: Text(value.toString()),
+        );
+      }).toList(),
+      hint: Text('Hours'),
+      onChanged: (value) => times[0] = value,
+    );
+  }
+
+  Widget minDropDown(List<int> times) {
+    return DropdownButtonFormField<int>(
+      items: List<int>.generate(59, (int index) => index + 1)
+          .map<DropdownMenuItem<int>>((int value) {
+        return DropdownMenuItem<int>(
+          value: value,
+          child: Text(value.toString()),
+        );
+      }).toList(),
+      hint: Text('Minutes'),
+      onChanged: (value) => times[1] = value,
     );
   }
 }
