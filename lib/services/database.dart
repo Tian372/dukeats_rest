@@ -51,10 +51,11 @@ class DatabaseMethods {
     return myList;
   }
 
-  Future<List<DailyMenu>> getAllTask(String id) async {
+  Future<List<DailyMenu>> getAllTaskHistory(String id) async {
     QuerySnapshot qs = await FirebaseFirestore.instance
         .collection('dailyMenu')
         .where('restaurantID', isEqualTo: id)
+        .where('status', isEqualTo: false)
         .get()
         .catchError((e) {
       print(e.toString());
@@ -113,6 +114,25 @@ class DatabaseMethods {
     myList.sort((a, b) => b.postDate.compareTo(a.postDate));
 
     return myList.first;
+  }
+
+  Future<List<Order>> getOrderListById(List<String> orderIDList) async {
+    QuerySnapshot qs = await FirebaseFirestore.instance
+        .collection('orders')
+        .get()
+        .catchError((e) {
+      print(e.toString());
+    });
+
+    List<Order> myList = [];
+    for (int i = 0; i < qs.docs.length; i++) {
+      if(orderIDList.contains(qs.docs[i].id)) {
+        Order tmp = Order.fromJson(qs.docs[i].data());
+        tmp.orderId = qs.docs[i].id;
+        myList.add(tmp);
+      }
+    }
+    return myList;
   }
 
   Future<Menu> getMenuById(String menuID) async {

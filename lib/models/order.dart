@@ -1,18 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Order{
-  Map<String, int> cart;
-  String clientEmail;
-  String status;
+  String orderId;
+  String userEmail;
+  String dailyMenuId;
+  String pickupId;
+  int amount;
 
-  Order({this.cart, this.clientEmail, this.status});
+  Order({this.orderId, this.userEmail, this.dailyMenuId, this.pickupId, this.amount});
 
-/*
+
   factory Order.fromJson(Map<String, dynamic> json) => Order(
-    cart: json['cart'] as Map<String, int>,
-    clientEmail: json['clientEmail'] as String,
-    status: json['status'] as String,
+    userEmail: json['userEmail'] as String,
+    dailyMenuId: json['dailyMenuID'] as String,
+    pickupId: json['pickupID'] as String,
+    amount: json['amount'] as int,
   );
 
- */
 }

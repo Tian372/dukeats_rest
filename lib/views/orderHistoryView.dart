@@ -31,7 +31,7 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
 
   Future<void> getPastTask() async {
     List<DailyMenu> temp = await DatabaseMethods()
-        .getAllTask(FirebaseAuth.instance.currentUser.uid);
+        .getAllTaskHistory(FirebaseAuth.instance.currentUser.uid);
     setState(() {
       this._pastTaskList = temp;
     });
@@ -120,6 +120,8 @@ class OrderGroupCard extends StatefulWidget {
 class _OrderGroupCardState extends State<OrderGroupCard> {
   @override
   Widget build(BuildContext context) {
+    double money = widget.deliveryTask.orderNum.truncateToDouble() *
+        widget.deliveryTask.menu.price.truncateToDouble();
     return Card(
       child: GestureDetector(
         onTap: () {
@@ -131,8 +133,8 @@ class _OrderGroupCardState extends State<OrderGroupCard> {
         child: ListTile(
           title: Text(widget.deliveryTask.menu.menuName,
               style: TextStyle(fontWeight: FontWeight.w500)),
-          subtitle: Text(widget.deliveryTask.menu.menuName),
-          trailing: Text("money"),
+          subtitle: Text(widget.deliveryTask.menu.description),
+          trailing: Text("\$" + money.toStringAsFixed(2)),
         ),
       ),
     );
