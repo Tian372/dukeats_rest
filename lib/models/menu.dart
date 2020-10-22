@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class DailyMenu {
-  //TODO: change to correct time format
   Menu menu;
   DateTime postDate = new DateTime.now();
   int orderNum;
@@ -12,6 +11,7 @@ class DailyMenu {
   String restaurantID;
   List<Pickups> pickupInfo;
   String dailyMenuID = ''; //read from firebase document id
+  bool isFinished = false;
 
   DailyMenu({
     this.orderNum,
@@ -31,6 +31,7 @@ class DailyMenu {
         'price': this.menu.price,
         'description': this.menu.description,
         'imageName': this.menu.imageName,
+        'status': this.isFinished,
       };
 
   factory DailyMenu.fromJson(Map<String, dynamic> json) {
@@ -49,7 +50,7 @@ class DailyMenu {
         description: json['description'] as String,
         imageName: json['imageName'] as String);
     jsonMenu.menu.menuID = json['menuID'] as String;
-
+    jsonMenu.isFinished = json['status'] as bool;
     return jsonMenu;
   }
 }

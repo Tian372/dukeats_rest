@@ -30,7 +30,6 @@ class MealForm extends StatefulWidget {
 }
 
 class MealFormState extends State<MealForm> {
-  final _formKey = GlobalKey<FormState>();
   int _amount = 0;
   int _selectedIndex = -1;
   List<Menu> _allMenus;
@@ -56,45 +55,49 @@ class MealFormState extends State<MealForm> {
       this._allMenus = temp;
     });
   }
-
+  bool hasError(){
+    if(this._selectedIndex == -1 || pickupData.isEmpty || _amount < 0){
+      return true;
+    }else{
+      return false;
+    }
+  }
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(width: double.infinity, height: 120, child: menuList()),
-          amount(),
-          location(),
-          Flexible(child: locationList()),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: RaisedButton(
-              onPressed: () {
-                if (_formKey.currentState.validate()) {
-                  DailyMenu dailyMenu = new DailyMenu(
-                    menu: this._allMenus[this._selectedIndex],
-                    orderLimit: this._amount,
-                    orderNum: 0,
-                    restaurantID: FirebaseAuth.instance.currentUser.uid,
-                    pickupInfo: this.pickupData,
-                  );
-                  //TODo: add translation
-                  Scaffold.of(context)
-                      .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
-                  DatabaseMethods().saveDailyMenu(dailyMenu);
-                  Future.delayed(Duration(seconds: 1), () {
-                    // 5s over, navigate to a new page
-                    Navigator.pop(context);
-                  });
-                }
-              },
-              child: Text(AppLocalizations.of(context).text('submit_text')),
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Container(width: double.infinity, height: 120, child: menuList()),
+        amount(),
+        location(),
+        Flexible(child: locationList()),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          child: RaisedButton(
+            onPressed: () {
+              if(!hasError()){
+                DailyMenu dailyMenu = new DailyMenu(
+                  menu: this._allMenus[this._selectedIndex],
+                  orderLimit: this._amount,
+                  orderNum: 0,
+                  restaurantID: FirebaseAuth.instance.currentUser.uid,
+                  pickupInfo: this.pickupData,
+                );
+                //TODo: add translation
+                Scaffold.of(context)
+                    .showSnackBar(SnackBar(content: Text('正在发布您的菜单...')));
+                DatabaseMethods().saveDailyMenu(dailyMenu);
+                Future.delayed(Duration(seconds: 1), () {
+                  // 5s over, navigate to a new page
+                  Navigator.pop(context);
+                });
+              }
+
+            },
+            child: Text(AppLocalizations.of(context).text('submit_text')),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

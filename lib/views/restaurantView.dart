@@ -15,10 +15,13 @@ class RestaurantView extends StatefulWidget {
 class _RestaurantViewState extends State<RestaurantView> {
   DailyMenu _dailyMenu;
   bool isHere = false;
+  int _stopLeft = 0;
+  Stream dailyMenuStream;
 
   @override
   void initState() {
     super.initState();
+    dailyMenuStream = DatabaseMethods().dailyMenuStream();
     getDailyMenu();
   }
 
@@ -30,69 +33,76 @@ class _RestaurantViewState extends State<RestaurantView> {
     });
   }
 
+  Future<void> updateAmount() async {
+    await DatabaseMethods().dailyMenuFuture().then((value) {
+      setState(() {
+        this._dailyMenu.orderNum = value.orderNum;
+      });
+    });
+  }
+
   @override
   void dispose() {
     super.dispose();
+    dailyMenuStream.drain();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: CustomScrollView(
-        slivers: <Widget>[
-          // Add the app bar to the CustomScrollView.
-          SliverAppBar(
-            // Provide a standard title.
-            title: this._dailyMenu == null
-                ? Text('')
-                : Text(this._dailyMenu.menu.menuName),
-            // Allows the user to reveal the app bar if they begin scrolling
-            // back up the list of items.
-            floating: true,
-            pinned: true,
-            snap: false,
-            // Display a placeholder widget to visualize the shrinking size.
-            // flexibleSpace: imageGetter(this._dailyMenu.menu.imageName),
-            flexibleSpace: this._dailyMenu == null
-                ? CircularProgressIndicator(
-                    backgroundColor: Colors.white,
-                  )
-                : Stack(
-                    fit: StackFit.expand,
-                    children: <Widget>[
-                      imageGetter(this._dailyMenu.menu.imageName),
-                      Center(
-                        child: ClipRect(
-                          // <-- clips to the 200x200 [Container] below
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(
-                              sigmaX: 10.0,
-                              sigmaY: 10.0,
-                            ),
-                            child: Container(
-                              alignment: Alignment.center,
-                              width: 200.0,
-                              height: 200.0,
-                              child: Text(
-                                '\$ ${this._dailyMenu.menu.price}  Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+      body: RefreshIndicator(
+        onRefresh: () => getDailyMenu(),
+        child: CustomScrollView(
+          slivers: <Widget>[
+            SliverAppBar(
+              title: this._dailyMenu == null
+                  ? Text('')
+                  : Text(this._dailyMenu.menu.menuName),
+              floating: true,
+              pinned: true,
+              snap: false,
+              flexibleSpace: this._dailyMenu == null
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        backgroundColor: Colors.white,
+                      ),
+                    )
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: <Widget>[
+                        imageGetter(this._dailyMenu.menu.imageName),
+                        Center(
+                          child: ClipRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX: 10.0,
+                                sigmaY: 10.0,
+                              ),
+                              child: Container(
+                                alignment: Alignment.center,
+                                width: 200.0,
+                                height: 200.0,
+                                child: Text( this._dailyMenu.isFinished ? 'Finished ✅' :
+                                  '\$ ${this._dailyMenu.menu.price}  Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-            expandedHeight: 250,
-          ),
-          // Next, create a SliverList
+                      ],
+                    ),
+              expandedHeight: 250,
+            ),
+            // Next, create a SliverList
 
-          this._dailyMenu == null
-              ? SliverToBoxAdapter(
-                  child: CircularProgressIndicator(),
-                )
-              : track(this._dailyMenu.dailyMenuID),
-        ],
+            this._dailyMenu == null
+                ? SliverToBoxAdapter(
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                : track(this._dailyMenu.dailyMenuID),
+          ],
+        ),
       ),
     );
   }
@@ -103,11 +113,16 @@ class _RestaurantViewState extends State<RestaurantView> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<Pickups> list = [];
+            int count = 0;
             for (int i = 0; i < snapshot.data.docs.length; i++) {
               Pickups ps = Pickups.fromJson(snapshot.data.docs[i].data());
               ps.pickupID = snapshot.data.docs[i].id;
+              if (ps.pickupStatus != Status.Finished) {
+                count++;
+              }
               list.add(ps);
             }
+            this._stopLeft = count;
             return SliverList(
                 delegate: SliverChildBuilderDelegate(
               (context, index) => trackerTile(list[index]),
@@ -115,7 +130,7 @@ class _RestaurantViewState extends State<RestaurantView> {
             ));
           } else {
             return SliverToBoxAdapter(
-              child: CircularProgressIndicator(),
+              child: Center(child: CircularProgressIndicator()),
             );
           }
         });
@@ -236,7 +251,9 @@ class _RestaurantViewState extends State<RestaurantView> {
 
         if (snapshot.connectionState == ConnectionState.waiting)
           return Container(
-              height: 40, width: 40, child: CircularProgressIndicator());
+              height: 40,
+              width: 40,
+              child: Center(child: CircularProgressIndicator()));
 
         return Container();
       },
@@ -375,6 +392,11 @@ class _RestaurantViewState extends State<RestaurantView> {
               onPressed: () {
                 DatabaseMethods()
                     .finishUpdate(this._dailyMenu.dailyMenuID, pickupId);
+                this._stopLeft--;
+                if (this._stopLeft == 0) {
+                  DatabaseMethods()
+                      .terminateTaskById(this._dailyMenu.dailyMenuID);
+                }
                 Navigator.of(context).pop();
                 Scaffold.of(bc).showSnackBar(SnackBar(
                     duration: const Duration(seconds: 2),
@@ -404,6 +426,4 @@ class _RestaurantViewState extends State<RestaurantView> {
           labelText: title),
     );
   }
-
-
 }

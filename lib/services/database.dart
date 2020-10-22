@@ -207,4 +207,13 @@ class DatabaseMethods {
         .orderBy('time')
         .snapshots();
   }
+
+  Future terminateTaskById(String id) async{
+    DocumentReference documentReference = FirebaseFirestore.instance
+        .collection('dailyMenu')
+        .doc(id);
+    documentReference.update({
+      'status': true,
+    });
+  }
 }
