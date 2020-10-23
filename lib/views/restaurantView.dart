@@ -36,7 +36,7 @@ class _RestaurantViewState extends State<RestaurantView> {
   Future<void> updateAmount() async {
     await DatabaseMethods().dailyMenuFuture().then((value) {
       setState(() {
-        this._dailyMenu.orderNum = value.orderNum;
+        this._dailyMenu = value;
       });
     });
   }
@@ -50,60 +50,75 @@ class _RestaurantViewState extends State<RestaurantView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: () => getDailyMenu(),
-        child: CustomScrollView(
-          slivers: <Widget>[
-            SliverAppBar(
-              title: this._dailyMenu == null
-                  ? Text('')
-                  : Text(this._dailyMenu.menu.menuName),
-              floating: true,
-              pinned: true,
-              snap: false,
-              flexibleSpace: this._dailyMenu == null
-                  ? Center(
-                      child: CircularProgressIndicator(
-                        backgroundColor: Colors.white,
-                      ),
-                    )
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: <Widget>[
-                        imageGetter(this._dailyMenu.menu.imageName),
-                        Center(
-                          child: ClipRect(
-                            child: BackdropFilter(
-                              filter: ImageFilter.blur(
-                                sigmaX: 10.0,
-                                sigmaY: 10.0,
-                              ),
-                              child: Container(
-                                alignment: Alignment.center,
-                                width: 200.0,
-                                height: 200.0,
-                                child: Text( this._dailyMenu.isFinished ? 'Finished ✅' :
-                                  '\$ ${this._dailyMenu.menu.price}  Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+      body: this._dailyMenu == null
+          ? SafeArea(
+              child: RefreshIndicator(
+              onRefresh: () => getDailyMenu(),
+              child: ListView(
+                children: [
+                  Center(child: Text('No Order Posted.')),
+                  Center(child: Text('Pull Down to Refresh ⬇️')),
+                  Center(child: Text('Or Post A New One.'))
+                ],
+              ),
+            ))
+          : RefreshIndicator(
+              onRefresh: () => getDailyMenu(),
+              child: CustomScrollView(
+                slivers: <Widget>[
+                  SliverAppBar(
+                    title: this._dailyMenu == null
+                        ? Text('')
+                        : Text(this._dailyMenu.menu.menuName),
+                    floating: true,
+                    pinned: true,
+                    snap: false,
+                    flexibleSpace: this._dailyMenu == null
+                        ? Center(
+                            child: CircularProgressIndicator(
+                              backgroundColor: Colors.white,
+                            ),
+                          )
+                        : Stack(
+                            fit: StackFit.expand,
+                            children: <Widget>[
+                              imageGetter(this._dailyMenu.menu.imageName),
+                              Center(
+                                child: ClipRect(
+                                  child: BackdropFilter(
+                                    filter: ImageFilter.blur(
+                                      sigmaX: 10.0,
+                                      sigmaY: 10.0,
+                                    ),
+                                    child: Container(
+                                      alignment: Alignment.center,
+                                      width: 200.0,
+                                      height: 200.0,
+                                      child: Text(
+                                        this._dailyMenu.isFinished
+                                            ? 'Finished ✅'
+                                            : '\$ ${this._dailyMenu.menu.price}  Amount: ${this._dailyMenu.orderNum} / ${this._dailyMenu.orderLimit} ',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
-              expandedHeight: 250,
-            ),
-            // Next, create a SliverList
+                    expandedHeight: 250,
+                  ),
+                  // Next, create a SliverList
 
-            this._dailyMenu == null
-                ? SliverToBoxAdapter(
-                    child: Center(child: CircularProgressIndicator()),
-                  )
-                : track(this._dailyMenu.dailyMenuID),
-          ],
-        ),
-      ),
+                  this._dailyMenu == null
+                      ? SliverToBoxAdapter(
+                          child: Center(child: CircularProgressIndicator()),
+                        )
+                      : track(this._dailyMenu.dailyMenuID),
+                ],
+              ),
+            ),
     );
   }
 
