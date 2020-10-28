@@ -101,7 +101,7 @@ class DatabaseMethods {
     QuerySnapshot qs = await FirebaseFirestore.instance
         .collection('dailyMenu')
         .where('restaurantID', isEqualTo: FirebaseAuth.instance.currentUser.uid)
-        .where('status', isEqualTo: false)
+        .where('isFinished', isEqualTo: false)
         .get()
         .catchError((e) {
       print(e.toString());
@@ -236,7 +236,7 @@ class DatabaseMethods {
         .collection('dailyMenu')
         .doc(id);
     documentReference.update({
-      'status': true,
+      'isFinished': true,
     });
   }
 }
