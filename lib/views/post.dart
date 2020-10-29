@@ -444,7 +444,7 @@ class DatePickerFormField extends FormField<DateTime> {
             validator: validator,
             initialValue: initialValue,
             builder: (FormFieldState<DateTime> state) {
-              return FlatButton(
+              return RaisedButton(
                   child: Text(
                     state.value == null
                         ? 'Pick Your Delivery Date'

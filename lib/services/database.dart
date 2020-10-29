@@ -55,7 +55,7 @@ class DatabaseMethods {
     QuerySnapshot qs = await FirebaseFirestore.instance
         .collection('dailyMenu')
         .where('restaurantID', isEqualTo: id)
-        .where('status', isEqualTo: true)
+        .where('isFinished', isEqualTo: true)
         .get()
         .catchError((e) {
       print(e.toString());
@@ -101,6 +101,7 @@ class DatabaseMethods {
     QuerySnapshot qs = await FirebaseFirestore.instance
         .collection('dailyMenu')
         .where('restaurantID', isEqualTo: FirebaseAuth.instance.currentUser.uid)
+        .where('isFinished', isEqualTo: false)
         .get()
         .catchError((e) {
       print(e.toString());
@@ -113,7 +114,7 @@ class DatabaseMethods {
     }
     myList.sort((a, b) => b.postDate.compareTo(a.postDate));
 
-    return myList.first;
+    return myList.length == 0? null : myList.first;
   }
 
   Future<List<Order>> getOrderListById(List<String> orderIDList) async {
@@ -235,7 +236,7 @@ class DatabaseMethods {
         .collection('dailyMenu')
         .doc(id);
     documentReference.update({
-      'status': true,
+      'isFinished': true,
     });
   }
 }

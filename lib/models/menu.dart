@@ -29,7 +29,7 @@ class DailyMenu {
         'price': this.menu.price,
         'description': this.menu.description,
         'imageName': this.menu.imageName,
-        'status': this.isFinished,
+        'isFinished': this.isFinished,
       };
 
   factory DailyMenu.fromJson(Map<String, dynamic> json) {
@@ -48,7 +48,7 @@ class DailyMenu {
         description: json['description'] as String,
         imageName: json['imageName'] as String);
     jsonMenu.menu.menuID = json['menuID'] as String;
-    jsonMenu.isFinished = json['status'] as bool;
+    jsonMenu.isFinished = json['isFinished'] as bool;
     return jsonMenu;
   }
 }
