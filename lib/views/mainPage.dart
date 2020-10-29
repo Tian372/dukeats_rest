@@ -1,6 +1,7 @@
 import 'package:Dukeats/localization/application.dart';
 import 'package:Dukeats/localization/localization.dart';
 import 'package:Dukeats/providers/userLogin.dart';
+import 'package:Dukeats/views/qrCodeScanner.dart';
 import 'package:Dukeats/views/orderHistoryView.dart';
 import 'package:Dukeats/views/postView.dart';
 import 'package:Dukeats/views/restaurantView.dart';

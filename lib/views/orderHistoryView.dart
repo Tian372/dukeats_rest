@@ -1,6 +1,7 @@
 import 'package:Dukeats/models/menu.dart';
 import 'package:Dukeats/services/database.dart';
 import 'package:Dukeats/views/pastOrderDetailView.dart';
+import 'package:Dukeats/views/qrCodeScanner.dart';
 import 'package:flutter/material.dart';
 import 'package:Dukeats/localization/localization.dart';
 
@@ -64,6 +65,15 @@ class _OrderHistoryViewState extends State<OrderHistoryView> {
                 children: [
                   for (final tab in tabs) TaskList(taskList: _pastTaskList)
                 ],
+              ),
+              floatingActionButton: FloatingActionButton.extended(
+                onPressed: () {
+                  Navigator.of(context, rootNavigator: true).push(
+                      MaterialPageRoute(
+                          builder: (BuildContext context) => QRCodeScanner()));
+                },
+                label: Text('Scan'),
+                backgroundColor: Colors.green,
               ),
             ),
           );

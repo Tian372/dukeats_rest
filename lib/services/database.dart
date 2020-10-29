@@ -55,7 +55,7 @@ class DatabaseMethods {
     QuerySnapshot qs = await FirebaseFirestore.instance
         .collection('dailyMenu')
         .where('restaurantID', isEqualTo: id)
-        .where('status', isEqualTo: false)
+        .where('status', isEqualTo: true)
         .get()
         .catchError((e) {
       print(e.toString());
